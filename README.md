@@ -1,3 +1,1 @@
-��#� �r�e�g�_�b�o�t�
-�
-�Шатаут
+# Registration bot
