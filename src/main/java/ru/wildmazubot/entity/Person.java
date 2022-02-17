@@ -19,11 +19,11 @@ public class Person {
 
     @Getter
     private static Map<Integer, String> fieldName = new HashMap<>(){{
-        put(0, "Фамилия:");
-        put(1, "Имя:");
-        put(2, "Отчество:");
-        put(3, "Дата рождения:");
-        put(4, "Паспорт:");
+        put(0, "Фамилия ( Ivanov ):");
+        put(1, "Имя ( Ivan ):");
+        put(2, "Отчество ( Ivanovich ):");
+        put(3, "Дата рождения ( dd.mm.yyyy ):");
+        put(4, "Паспорт ( серия и номер ):");
 
     }};
 

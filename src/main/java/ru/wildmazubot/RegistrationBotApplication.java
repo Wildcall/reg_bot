@@ -1,9 +1,11 @@
 package ru.wildmazubot;
 
-import ru.wildmazubot.service.TelegramBot;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+@SpringBootApplication
 public class RegistrationBotApplication {
     public static void main(String[] args) {
-        TelegramBot.start();
+        SpringApplication.run(RegistrationBotApplication.class, args);
     }
 }
