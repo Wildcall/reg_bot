@@ -4,6 +4,188 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.1.xsd">
 
     <changeSet id="2022-02-17-initialisation" author="Nikolay Malygin">
+
+        <createTable tableName="_address">
+            <column name="id"           type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="country"      type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="region"       type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="city"         type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="street"       type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="postalCode"   type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="_email">
+            <column name="id"           type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="email"        type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password"     type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="_passport">
+            <column name="id"           type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="firstName"    type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="secondName"   type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="middleName"   type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="birthDay"     type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="numberSeries" type="bigint">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="_person">
+            <column name="id"                   type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="location"             type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status"               type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="registration_date"    type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status_time"          type="datetime">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address_id"           type="bigint"/>
+            <column name="email_id"             type="bigint"/>
+            <column name="passport_id"          type="bigint"/>
+            <column name="phone_id"             type="bigint"/>
+            <column name="user_id"              type="bigint"/>
+        </createTable>
+
+        <createTable tableName="_person_project">
+            <column name="person_id"    type="bigint">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="project_id"  type="bigint">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="_project">
+            <column name="id"               type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name"             type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="link"             type="varchar(255)"/>
+            <column name="option_one_date"  type="datetime"/>
+            <column name="option_two_date"  type="datetime"/>
+            <column name="reg_deadline"     type="datetime"/>
+        </createTable>
+
+        <createTable tableName="_project_person">
+            <column name="project_id"  type="bigint">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="person_id"    type="bigint">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="_user">
+            <column name="id"       type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="status"   type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role"     type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="_phone">
+            <column name="id"       type="bigint" autoIncrement="true">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="number"   type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="_user" indexName="username_index">
+            <column name="username"/>
+        </createIndex>
+        <createIndex tableName="_email" indexName="email_index">
+            <column name="email"/>
+        </createIndex>
+        <createIndex tableName="_phone" indexName="phone_index">
+            <column name="number"/>
+        </createIndex>
+
+        <addForeignKeyConstraint baseTableName="_person" baseColumnNames="address_id"
+                                 constraintName="_person_address_id_address_id"
+                                 referencedTableName="_address" referencedColumnNames="id"
+                                 deleteCascade="true"/>
+        <addForeignKeyConstraint baseTableName="_person" baseColumnNames="email_id"
+                                 constraintName="_person_email_id_email_id"
+                                 referencedTableName="_email" referencedColumnNames="id"
+                                 deleteCascade="true"/>
+        <addForeignKeyConstraint baseTableName="_person" baseColumnNames="passport_id"
+                                 constraintName="_person_passport_id_passport_id"
+                                 referencedTableName="_passport" referencedColumnNames="id"
+                                 deleteCascade="true"/>
+        <addForeignKeyConstraint baseTableName="_person" baseColumnNames="phone_id"
+                                 constraintName="_person_phone_id_phone_id"
+                                 referencedTableName="_phone" referencedColumnNames="id"
+                                 deleteCascade="true"/>
+        <addForeignKeyConstraint baseTableName="_person" baseColumnNames="user_id"
+                                 constraintName="_person_user_id_user_id"
+                                 referencedTableName="_user" referencedColumnNames="id"
+                                 deleteCascade="true"/>
+
+        <addForeignKeyConstraint baseTableName="_person_project" baseColumnNames="project_id"
+                                 constraintName="_person_project_project_id_project_id"
+                                 referencedTableName="_project" referencedColumnNames="id"
+                                 deleteCascade="true"/>
+        <addForeignKeyConstraint baseTableName="_person_project" baseColumnNames="person_id"
+                                 constraintName="_person_project_person_id_person_id"
+                                 referencedTableName="_person" referencedColumnNames="id"
+                                 deleteCascade="true"/>
+
+        <addForeignKeyConstraint baseTableName="_project_person" baseColumnNames="person_id"
+                                 constraintName="_project_person_person_id_person_id"
+                                 referencedTableName="_person" referencedColumnNames="id"
+                                 deleteCascade="true"/>
+        <addForeignKeyConstraint baseTableName="_project_person" baseColumnNames="project_id"
+                                 constraintName="_project_person_project_id_project_id"
+                                 referencedTableName="_project" referencedColumnNames="id"
+                                 deleteCascade="true"/>
+
     </changeSet>
 
 </databaseChangeLog>
