@@ -21,7 +21,7 @@
             <column name="street"       type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="postalCode"   type="varchar(255)">
+            <column name="postal_code"   type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
         </createTable>
@@ -42,29 +42,23 @@
             <column name="id"           type="bigint" autoIncrement="true">
                 <constraints nullable="false" primaryKey="true"/>
             </column>
-            <column name="firstName"    type="varchar(255)">
+            <column name="first_name"    type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="secondName"   type="varchar(255)">
+            <column name="last_name"   type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="middleName"   type="varchar(255)">
+            <column name="middle_name"   type="varchar(255)">
                 <constraints nullable="false"/>
             </column>
-            <column name="birthDay"     type="datetime">
+            <column name="birthday"     type="datetime">
                 <constraints nullable="false"/>
-            </column>
-            <column name="numberSeries" type="bigint">
-                <constraints nullable="false" unique="true"/>
             </column>
         </createTable>
 
         <createTable tableName="_person">
             <column name="id"                   type="bigint" autoIncrement="true">
                 <constraints nullable="false" primaryKey="true"/>
-            </column>
-            <column name="location"             type="varchar(255)">
-                <constraints nullable="false"/>
             </column>
             <column name="status"               type="varchar(255)">
                 <constraints nullable="false"/>
