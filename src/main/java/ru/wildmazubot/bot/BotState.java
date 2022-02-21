@@ -7,6 +7,7 @@ public enum BotState {
     USER_NEW                        (0, "", ""),
     USER_PROCESS                    (0, "", ""),
     USER_ACTIVE                     (0, "", ""),
+    USER_ACTIVE_PAYMENT             (0, "", ""),
 
     USER_WAIT_KYC                   (0, "", ""),
     USER_WAIT_APPROVE               (0, "", ""),
@@ -30,6 +31,7 @@ public enum BotState {
     OPERATOR_TEST                   (1, "", ""),
     OPERATOR_CONFIRM_EMAIL          (1, "", ""),
     OPERATOR_CONFIRM_CL             (1, "", ""),
+    OPERATOR_CONFIRM_APPROVE        (1, "", ""),
     OPERATOR_CURRENT_USER           (1, "", "");
 
     private final int code;

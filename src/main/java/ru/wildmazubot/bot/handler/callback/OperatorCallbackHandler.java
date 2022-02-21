@@ -1,6 +1,8 @@
 package ru.wildmazubot.bot.handler.callback;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import ru.wildmazubot.bot.BotState;
@@ -15,15 +17,19 @@ import ru.wildmazubot.service.UserService;
 
 @Slf4j
 @Service
+@PropertySource("classpath:telegrambot.properties")
 public class OperatorCallbackHandler {
+
+    @Value("${user.bonus:1000}")
+    private int bonus;
+    @Value("${user.ref.bonus:100}")
+    private int refBonus;
 
     private final Cache cache;
     private final UserService userService;
     private final OperatorSendMessageService messageService;
     private final ReplyMessageService getReplyText;
     private final NotificationService notificationService;
-
-    private static final BotState[] state = BotState.getOperatorState();
 
     public OperatorCallbackHandler(Cache cache,
                                    UserService userService,
@@ -87,6 +93,7 @@ public class OperatorCallbackHandler {
 
         if (OperatorCommand.OPERATOR_YES.getCommand().equals(command)) {
             if (botState == BotState.OPERATOR_CONFIRM_EMAIL) {
+                cache.deleteFromCache(Long.parseLong(cache.getUserInputData(userId).get(BotState.OPERATOR_CURRENT_USER)));
                 if (!userService.saveEmail(cache.getUserInputData(userId),userId)){
                     cache.setUserBotState(userId, BotState.OPERATOR_EMAIL);
                     return new ReceiveMessagePayload(
@@ -101,6 +108,7 @@ public class OperatorCallbackHandler {
             if (botState == BotState.OPERATOR_CONFIRM_CL) {
                 long currentUserId = Long.parseLong(cache.getUserInputData(userId).get(BotState.OPERATOR_CURRENT_USER));
                 userService.updateStatus(currentUserId, UserStatus.WAIT_KYC);
+                cache.deleteFromCache(currentUserId);
                 cache.setUserBotState(userId, BotState.OPERATOR_START);
                 return new ReceiveMessagePayload(
                         messageService.getResponse(
@@ -109,6 +117,11 @@ public class OperatorCallbackHandler {
                         notificationService.getMessage(
                                 currentUserId,
                                 getReplyText.getReplyText("notification.user.wait_kyc.ready")));
+            }
+            if (botState == BotState.OPERATOR_CONFIRM_APPROVE) {
+                long currentUserId = Long.parseLong(cache.getUserInputData(userId).get(BotState.OPERATOR_CURRENT_USER));
+                cache.deleteFromCache(currentUserId);
+                userService.approveUser(currentUserId, bonus, refBonus);
             }
         }
 
@@ -119,9 +132,6 @@ public class OperatorCallbackHandler {
                         messageService.getResponse(
                                 chatId,
                                 getReplyText.getReplyText("reply.create.email.title")));
-            }
-            if (botState == BotState.OPERATOR_CONFIRM_CL) {
-                cache.setUserBotState(userId, BotState.OPERATOR_START);
             }
         }
 

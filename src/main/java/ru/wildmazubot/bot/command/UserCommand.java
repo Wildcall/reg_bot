@@ -15,7 +15,8 @@ public enum UserCommand {
     USER_LIST       ("/user_list", 0),
     USER_LINK       ("/user_link", 0),
     USER_REFERRALS  ("/user_referrals", 0),
-    USER_BONUSES    ("/user_bonuses", 0);
+    USER_BONUSES    ("/user_bonuses", 0),
+    USER_PAYMENT    ("/user_payment", 0);
 
 
     private final String command;

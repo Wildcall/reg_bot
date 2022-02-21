@@ -80,6 +80,14 @@ public class OperatorSendMessageService {
                                     chatId, getReplyText.getReplyText("reply.operator.ready.to.cl")),
                             notificationService.getMessage(chatId, userService.userToCoinlist(user.getId())));
                 }
+                if (approve(operator, user)) {
+                    cache.addUserInputData(userId, BotState.OPERATOR_CURRENT_USER, String.valueOf(user.getId()));
+                    cache.setUserBotState(userId, BotState.OPERATOR_CONFIRM_APPROVE);
+                    return new ReceiveMessagePayload(
+                            getOperatorConfirmMenu(
+                                    chatId, getReplyText.getReplyText("reply.operator.ready.to.approve")),
+                            notificationService.getMessage(chatId, userService.userToApprove(user.getId())));
+                }
             }
         }
 
@@ -167,6 +175,13 @@ public class OperatorSendMessageService {
     private boolean regCl(User operator, User user) {
         if (operator != null && operator.getUserRole().equals(UserRole.OPERATOR)) {
             return operator.getProcessedUsers().contains(user) && user.getStatus().equals(UserStatus.WAIT_CL);
+        }
+        return false;
+    }
+
+    private boolean approve(User operator, User user) {
+        if (operator != null && operator.getUserRole().equals(UserRole.OPERATOR)) {
+            return operator.getProcessedUsers().contains(user) && user.getStatus().equals(UserStatus.WAIT_APPROVE);
         }
         return false;
     }

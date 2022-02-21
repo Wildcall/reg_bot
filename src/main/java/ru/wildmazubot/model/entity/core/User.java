@@ -42,6 +42,9 @@ public class User {
     @Column(name = "status_time", nullable = false)
     private LocalDateTime statusTime;
 
+    @Column(name = "bonus")
+    private int bonus;
+
     @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY)
     private User referrer;

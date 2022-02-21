@@ -10,6 +10,7 @@ import ru.wildmazubot.bot.handler.service.NotificationService;
 import ru.wildmazubot.bot.handler.service.UserSendMessageService;
 import ru.wildmazubot.cache.Cache;
 import ru.wildmazubot.model.entity.UserStatus;
+import ru.wildmazubot.model.entity.core.User;
 import ru.wildmazubot.service.ReplyMessageService;
 import ru.wildmazubot.service.UserService;
 
@@ -43,15 +44,7 @@ public class UserCallbackHandler {
         String command = callbackQuery.getData();
 
         if (UserCommand.USER_START.getCommand().equals(command)){
-            return new ReceiveMessagePayload(
-                    switch (botState) {
-                        case USER_NEW               -> messageService.getUserNewMainMenu(chatId);
-                        case USER_PROCESS,
-                                USER_WAIT_APPROVE   -> messageService.getUserProcessMainMenu(chatId);
-                        case USER_WAIT_KYC          -> messageService.getUserKycMainMenu(chatId);
-                        case USER_ACTIVE            -> messageService.getUserActiveMainReply(chatId);
-                        default -> null;
-            });
+            return new ReceiveMessagePayload(messageService.getStartMenu(botState, chatId));
         }
 
         if (UserCommand.USER_NEW_CREATE.getCommand().equals(command)){
@@ -116,8 +109,17 @@ public class UserCallbackHandler {
 
         if (UserCommand.USER_BONUSES.getCommand().equals(command)){
             if (botState.equals(BotState.USER_ACTIVE)){
+                User user = userService.findById(userId);
                 return new ReceiveMessagePayload(
-                        messageService.getBackMenu(chatId, "Мы обязательно насыпем тебе горошку!"));
+                        messageService.getUserKycMainMenu(chatId, user.getBonus()));
+            }
+        }
+
+        if (UserCommand.USER_PAYMENT.getCommand().equals(command)){
+            if (botState.equals(BotState.USER_ACTIVE)){
+                cache.setUserBotState(userId, BotState.USER_ACTIVE_PAYMENT);
+                return new ReceiveMessagePayload(
+                        messageService.getResponse(chatId, getReplyText.getReplyText("reply.user.active.payment.info")));
             }
         }
 
@@ -144,7 +146,7 @@ public class UserCallbackHandler {
                             messageService.getUserProcessMainMenu(chatId),
                             notificationService.getMessage(
                                     userService.getOperatorId(userId),
-                                    getReplyText.getReplyText("notification.user.wait_kyc.ready")));
+                                    getReplyText.getReplyText("notification.operator.wait_approve", String.valueOf(userId))));
                 }
             }
         }

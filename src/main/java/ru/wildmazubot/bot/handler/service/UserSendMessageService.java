@@ -6,8 +6,10 @@ import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import ru.wildmazubot.bot.BotState;
 import ru.wildmazubot.bot.command.UserCommand;
+import ru.wildmazubot.bot.handler.ReceiveMessagePayload;
 import ru.wildmazubot.cache.Cache;
 import ru.wildmazubot.service.ReplyMessageService;
+import ru.wildmazubot.service.UserService;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,14 +19,18 @@ public class UserSendMessageService {
 
     private final KeyboardService keyboardService;
     private final ReplyMessageService getReplyText;
+    private final NotificationService notificationService;
+    private final UserService userService;
     private final Cache cache;
     private static final BotState[] state = BotState.getUserState();
 
     public UserSendMessageService(KeyboardService keyboardService,
                                   ReplyMessageService getReplyText,
-                                  Cache cache) {
+                                  NotificationService notificationService, UserService userService, Cache cache) {
         this.keyboardService = keyboardService;
         this.getReplyText = getReplyText;
+        this.notificationService = notificationService;
+        this.userService = userService;
         this.cache = cache;
     }
 
@@ -38,18 +44,31 @@ public class UserSendMessageService {
         return message;
     }
 
-    public SendMessage handleInputData(long chatId,
-                                       long userId,
-                                       BotState botState,
-                                       String text) {
+    public ReceiveMessagePayload handleInputData(long chatId,
+                                                 long userId,
+                                                 BotState botState,
+                                                 String text) {
+        if (botState.equals(BotState.USER_ACTIVE_PAYMENT)) {
+            ReceiveMessagePayload messagePayload = new ReceiveMessagePayload(getStartMenu(botState, chatId));
+            messagePayload.addPayload(
+                    new SendMessage(
+                            String.valueOf(userService.getOperatorId(userId)),
+                            text));
+            messagePayload.addPayload(
+                    new SendMessage(
+                            String.valueOf(chatId),
+                            getReplyText.getReplyText("reply.user.active.payment.send")));
+            return messagePayload;
+        }
+
         int index = contains(botState, state);
 
         if (index != -1) {
 
             if (!validate(botState, text)) {
-                return getResponse(
+                return new ReceiveMessagePayload(getResponse(
                         chatId,
-                        getReplyText.getReplyText("reply.create." + botState.getTitle() + ".error"));
+                        getReplyText.getReplyText("reply.create." + botState.getTitle() + ".error")));
             }
 
             cache.addUserInputData(userId, BotState.getUserState()[index], text);
@@ -59,27 +78,27 @@ public class UserSendMessageService {
 
                 StringBuilder sb = new StringBuilder();
                 cache.getUserInputData(userId).values().forEach(s -> sb.append(s).append("\n"));
-                return getUserNewConfirmMenu(chatId, sb.toString());
+                return new ReceiveMessagePayload(getUserNewConfirmMenu(chatId, sb.toString()));
             }
 
             cache.addUserInputData(userId, BotState.getUserState()[index], text);
             cache.setUserBotState(userId, BotState.getUserState()[index + 1]);
-            return getResponse(chatId,
+            return new ReceiveMessagePayload(getResponse(chatId,
                     getReplyText.getReplyText("reply.create."
                             + state[index + 1].getTitle()
-                            + ".title"));
+                            + ".title")));
         }
 
-        return null;
+        return new ReceiveMessagePayload(getStartMenu(botState, chatId));
     }
 
     public SendMessage getStartMenu(BotState botState, long chatId) {
         return switch (botState) {
-            case USER_NEW               -> getUserNewMainMenu(chatId);
+            case USER_NEW                           -> getUserNewMainMenu(chatId);
             case USER_PROCESS,
-                    USER_WAIT_APPROVE   -> getUserProcessMainMenu(chatId);
-            case USER_WAIT_KYC          -> getUserKycMainMenu(chatId);
-            case USER_ACTIVE            -> getUserActiveMainReply(chatId);
+                    USER_WAIT_APPROVE               -> getUserProcessMainMenu(chatId);
+            case USER_WAIT_KYC                      -> getUserKycMainMenu(chatId);
+            case USER_ACTIVE, USER_ACTIVE_PAYMENT   -> getUserActiveMainReply(chatId);
             default -> null;
         };
     }
@@ -154,6 +173,17 @@ public class UserSendMessageService {
                     getReplyText.getReplyText("keyboard.back"),
                     UserCommand.USER_START.getCommand());
         }
+    }
+
+    public SendMessage getUserKycMainMenu(long chatId, int bonus) {
+        return keyboardService.getReply(
+                chatId,
+                getReplyText.getReplyText("keyboard.user.active.bonus.title", bonus),
+                KeyboardService.UserKeyboardSize.TWO,
+                getReplyText.getReplyText("keyboard.user.active.bonus.payment.method"),
+                UserCommand.USER_PAYMENT.getCommand(),
+                getReplyText.getReplyText("keyboard.back"),
+                UserCommand.USER_START.getCommand());
     }
 
     private static int contains(final BotState v, final BotState[] states) {

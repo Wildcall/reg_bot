@@ -4,6 +4,7 @@ import lombok.Data;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -19,7 +20,7 @@ public class ReceiveMessagePayload {
 
     public ReceiveMessagePayload(BotApiMethod<?> message) {
         this.message = message;
-        this.payload = null;
+        this.payload = new ArrayList<>();
     }
 
     public void addPayload(SendMessage message) {

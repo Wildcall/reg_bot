@@ -40,6 +40,7 @@ public class UserService {
         user.setUsername(username);
         user.setUserRole(UserRole.USER);
         user.setStatus(UserStatus.NEW);
+        user.setBonus(0);
         user.setReferrer(referrerUser);
         user.setRegistrationDate(LocalDateTime.now());
         user.setStatusTime(LocalDateTime.now());
@@ -200,5 +201,28 @@ public class UserService {
             return sb.toString();
         }
         return null;
+    }
+
+    public String userToApprove(long userId) {
+        User user = findById(userId);
+        if (user != null){
+            StringBuilder sb = new StringBuilder();
+            sb.append(user.getEmail().getEmail()).append("\n");
+            return sb.toString();
+        }
+        return null;
+    }
+
+    public void approveUser(long userId, int bonus, int refBonus) {
+        User user = findById(userId);
+        if (user != null) {
+            user.setStatus(UserStatus.ACTIVE);
+            user.setStatusTime(LocalDateTime.now());
+            user.setBonus(user.getBonus() + bonus);
+            User refUser = user.getReferrer();
+            refUser.setBonus(refUser.getBonus() + refBonus);
+            userRepo.save(user);
+            userRepo.save(refUser);
+        }
     }
 }

@@ -97,6 +97,7 @@
             <column name="status_time"          type="datetime">
                 <constraints nullable="false"/>
             </column>
+            <column name="bonus"                type="bigint"/>
             <column name="referrer_id"          type="bigint"/>
             <column name="operator_id"          type="bigint"/>
             <column name="address_id"           type="bigint"/>
