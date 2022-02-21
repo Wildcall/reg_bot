@@ -32,7 +32,7 @@ public class Passport {
     private LocalDate birthDay;
 
     @OneToOne(mappedBy = "passport")
-    private Person person;
+    private User person;
 
     @Override
     public boolean equals(Object o) {

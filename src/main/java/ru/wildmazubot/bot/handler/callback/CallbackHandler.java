@@ -7,58 +7,28 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import ru.wildmazubot.bot.BotState;
+import ru.wildmazubot.bot.handler.ReceiveMessagePayload;
 import ru.wildmazubot.cache.Cache;
 
 @Slf4j
 @Service
-@PropertySource("classpath:telegrambot.properties")
 public class CallbackHandler {
 
-    private final Cache cache;
     private final UserCallbackHandler userCallbackHandler;
     private final OperatorCallbackHandler operatorCallbackHandler;
 
-    @Value("${telegram.bot.debug:false}")
-    private boolean debug;
-
-    public CallbackHandler(Cache cache,
-                           UserCallbackHandler userCallbackHandler,
+    public CallbackHandler(UserCallbackHandler userCallbackHandler,
                            OperatorCallbackHandler operatorCallbackHandler) {
-        this.cache = cache;
         this.userCallbackHandler = userCallbackHandler;
         this.operatorCallbackHandler = operatorCallbackHandler;
     }
 
-    public BotApiMethod<?> handle(CallbackQuery callbackQuery) {
-        String username = callbackQuery.getFrom().getUserName();
-        BotState botState = cache.getUserBotState(username);
+    public ReceiveMessagePayload handle(CallbackQuery callbackQuery, BotState botState) {
 
-        if (botState.getCode() == -1) {
-            if (debug)
-                log.info("CallbackHandler --> UserMessageHandler {}",
-                        botState.name());
-            return null;
-        }
-
-        if (botState.getCode() == 0) {
-            if (debug)
-                log.info("CallbackHandler --> UserCallbackHandler {}",
-                        botState.name());
-            return userCallbackHandler.handle(callbackQuery, botState);
-        }
-
-        // TODO: 18.02.2022 implement
-        if (botState.getCode() == 1) {
-            if (debug)
-                log.info("CallbackHandler --> OperatorCallbackHandler {}",
-                        botState.name());
-            return operatorCallbackHandler.handle(callbackQuery, botState);
-        }
-
-        if (debug)
-            log.info("CallbackHandler --> null {}",
-                    botState.name());
-
-        return null;
+        return switch (botState.getCode()) {
+            case 0 -> userCallbackHandler.handle(callbackQuery, botState);
+            case 1 -> operatorCallbackHandler.handle(callbackQuery, botState);
+            default -> null;
+        };
     }
 }

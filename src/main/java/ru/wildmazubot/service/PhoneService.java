@@ -16,9 +16,9 @@ public class PhoneService {
         this.phoneRepo = phoneRepo;
     }
 
-    public Phone save(Map<String, String> userInputData) {
+    public Phone save(Map<BotState, String> userInputData) {
         Phone phone = new Phone();
-        phone.setNumber(userInputData.get(BotState.USER_C_PHONE_NUMBER.name()));
+        phone.setNumber(userInputData.get(BotState.USER_PHONE_NUMBER));
 
         return phoneRepo.save(phone);
     }

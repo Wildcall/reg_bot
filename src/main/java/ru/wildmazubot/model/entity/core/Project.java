@@ -40,7 +40,7 @@ public class Project {
 
     @ManyToMany
     @ToString.Exclude
-    private Set<Person> persons;
+    private Set<User> users;
 
     @Override
     public boolean equals(Object o) {

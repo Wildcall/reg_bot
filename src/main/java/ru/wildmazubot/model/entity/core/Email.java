@@ -1,6 +1,9 @@
 package ru.wildmazubot.model.entity.core;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
@@ -25,14 +28,14 @@ public class Email {
     private String password;
 
     @OneToOne(mappedBy = "email")
-    private Person person;
+    private User person;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
         Email email = (Email) o;
-        return id != null && Objects.equals(id, email.id) && Objects.equals(email, email.email);
+        return id != null && Objects.equals(id, email.id) && email.equals(email.email);
     }
 
     @Override

@@ -1,144 +1,163 @@
 package ru.wildmazubot.bot.handler.callback;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.ParseMode;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import ru.wildmazubot.bot.BotState;
 import ru.wildmazubot.bot.command.UserCommand;
-import ru.wildmazubot.bot.handler.service.UserKeyboardService;
+import ru.wildmazubot.bot.handler.ReceiveMessagePayload;
+import ru.wildmazubot.bot.handler.service.NotificationService;
+import ru.wildmazubot.bot.handler.service.UserSendMessageService;
 import ru.wildmazubot.cache.Cache;
-import ru.wildmazubot.model.entity.core.Person;
-import ru.wildmazubot.service.PersonService;
-
-import java.util.List;
+import ru.wildmazubot.model.entity.UserStatus;
+import ru.wildmazubot.service.ReplyMessageService;
+import ru.wildmazubot.service.UserService;
 
 @Slf4j
 @Service
-@PropertySource("classpath:telegrambot.properties")
 public class UserCallbackHandler {
 
-    private final UserKeyboardService userKeyboardService;
-    private final PersonService personService;
     private final Cache cache;
+    private final UserService userService;
+    private final UserSendMessageService messageService;
+    private final ReplyMessageService getReplyText;
+    private final NotificationService notificationService;
 
-    @Value("${telegram.bot.debug:false}")
-    private boolean debug;
+    private static final BotState[] state = BotState.getUserState();
 
-    public UserCallbackHandler(UserKeyboardService userKeyboardService,
-                               PersonService personService,
-                               Cache cache) {
-        this.userKeyboardService = userKeyboardService;
-        this.personService = personService;
+    public UserCallbackHandler(Cache cache, UserService userService,
+                               UserSendMessageService messageService,
+                               ReplyMessageService getReplyText,
+                               NotificationService notificationService) {
         this.cache = cache;
+        this.userService = userService;
+        this.messageService = messageService;
+        this.getReplyText = getReplyText;
+        this.notificationService = notificationService;
     }
 
-    public BotApiMethod<?> handle(CallbackQuery callbackQuery,
+    public ReceiveMessagePayload handle(CallbackQuery callbackQuery,
                                   BotState botState) {
-        String command = callbackQuery.getData();
-        String username = callbackQuery.getFrom().getUserName();
-        String text;
         long chatId = callbackQuery.getMessage().getChatId();
+        long userId = callbackQuery.getFrom().getId();
+        String command = callbackQuery.getData();
 
-        if (debug) log.info("Command - {} , botState - {}", command, botState);
+        if (UserCommand.USER_START.getCommand().equals(command)){
+            return new ReceiveMessagePayload(
+                    switch (botState) {
+                        case USER_NEW               -> messageService.getUserNewMainMenu(chatId);
+                        case USER_PROCESS,
+                                USER_WAIT_APPROVE   -> messageService.getUserProcessMainMenu(chatId);
+                        case USER_WAIT_KYC          -> messageService.getUserKycMainMenu(chatId);
+                        case USER_ACTIVE            -> messageService.getUserActiveMainReply(chatId);
+                        default -> null;
+            });
+        }
 
-        if (UserCommand.USER_LIST.getCommand().equals(command)){
-            cache.setUserBotState(username, BotState.USER_START);
-            List<Person> personList = personService.findAllByUsername(username);
-            if(personList.isEmpty()) {
-                text = "Пока что тут пусто...";
-            } else {
-                StringBuilder sb = new StringBuilder();
-                personList.forEach(p -> sb.append(p.shortView()).append("\n"));
-                text = sb.toString();
+        if (UserCommand.USER_NEW_CREATE.getCommand().equals(command)){
+            if (BotState.USER_NEW.equals(botState)){
+                cache.setUserBotState(userId, state[0]);
+                return new ReceiveMessagePayload(
+                        messageService.getResponse(
+                                chatId, getReplyText.getReplyText("reply.create." + state[0].getTitle() + ".title")));
             }
-            return userKeyboardService
-                    .getReply(chatId,
-                            text,
-                            UserKeyboardService.UserKeyboardType.BACK);
-        }
-
-        if (UserCommand.USER_CREATE.getCommand().equals(command)){
-            cache.setUserBotState(username, BotState.USER_CREATE);
-            return userKeyboardService
-                    .getReply(chatId,
-                            "Ты хочешь зарегистрировать аккаунт для нас?",
-                            UserKeyboardService.UserKeyboardType.YES_NO,
-                            "Да",
-                            "Нет");
-        }
-
-        if (UserCommand.USER_MESSAGE.getCommand().equals(command)){
-            cache.setUserBotState(username, BotState.USER_START);
-            text = "Тут будет опция написать оператору по любому вопросу!";
-            return userKeyboardService
-                    .getReply(chatId,
-                            text,
-                            UserKeyboardService.UserKeyboardType.BACK);
         }
 
         if (UserCommand.USER_HELP.getCommand().equals(command)){
-            cache.setUserBotState(username, BotState.USER_START);
-            text = "Тут будет файл или видео с инструкцией!";
-            return userKeyboardService
-                    .getReply(chatId,
-                            text,
-                            UserKeyboardService.UserKeyboardType.BACK);
+            switch (botState) {
+                case USER_NEW -> {
+                    cache.setUserBotState(userId, BotState.USER_NEW);
+                    return new ReceiveMessagePayload(
+                            messageService.getBackMenu(
+                                    chatId, "reply.new.help"));
+                }
+                case USER_PROCESS -> {
+                    cache.setUserBotState(userId, BotState.USER_PROCESS);
+                    return new ReceiveMessagePayload(
+                            messageService.getBackMenu(
+                                    chatId, "reply.process.help"));
+                }
+                case USER_WAIT_KYC -> {
+                    cache.setUserBotState(userId, BotState.USER_WAIT_KYC);
+                    return new ReceiveMessagePayload(
+                            messageService.getBackMenu(
+                                    chatId, "reply.waitkyc.help"));
+                }
+                case USER_WAIT_APPROVE -> {
+                    cache.setUserBotState(userId, BotState.USER_WAIT_APPROVE);
+                    return new ReceiveMessagePayload(
+                            messageService.getBackMenu(
+                                    chatId, "reply.waitapprove.help"));
+                }
+                case USER_ACTIVE -> {
+                    cache.setUserBotState(userId, BotState.USER_ACTIVE);
+                    return new ReceiveMessagePayload(
+                            messageService.getBackMenu(
+                                    chatId, "reply.active.help"));
+                }
+            }
+        }
+
+        if (UserCommand.USER_LINK.getCommand().equals(command)) {
+            if (botState.equals(BotState.USER_ACTIVE)){
+                return new ReceiveMessagePayload(
+                        messageService.getBackMenu(chatId, getReplyText.getReplyText("reply.referral.link", String.valueOf(userId))));
+            }
+        }
+
+        if (UserCommand.USER_REFERRALS.getCommand().equals(command)){
+            if (botState.equals(BotState.USER_ACTIVE)){
+
+                return new ReceiveMessagePayload(
+                        messageService.getBackMenu(
+                                chatId, userService.getReferralListString(userId)));
+            }
+        }
+
+        if (UserCommand.USER_BONUSES.getCommand().equals(command)){
+            if (botState.equals(BotState.USER_ACTIVE)){
+                return new ReceiveMessagePayload(
+                        messageService.getBackMenu(chatId, "Мы обязательно насыпем тебе горошку!"));
+            }
         }
 
         if (UserCommand.USER_YES.getCommand().equals(command)){
-            if (botState.equals(BotState.USER_CREATE)) {
-                cache.setUserBotState(username, BotState.getStates()[0]);
-                text = BotState.getStates()[0].getTitle();
-                return getResponse(chatId, text);
-            }
-            if (botState.equals(BotState.USER_CREATE_CONFIRM)) {
-                boolean ok = personService.save(cache.getUserInputData(username), username);
-                cache.wipeUserInputData(username);
-                if (ok) {
-                    cache.setUserBotState(username, BotState.USER_START);
-                    return userKeyboardService.getReply(
-                            chatId,
-                            "Выбери что-то из предложенного!",
-                            UserKeyboardService.UserKeyboardType.MAIN);
+            switch (botState) {
+                case USER_NEW_CONFIRM -> {
+                    if (userService.saveUserInputData(cache.getUserInputData(userId), userId)) {
+                        cache.deleteFromCache(userId);
+                        cache.setUserBotState(userId, BotState.USER_PROCESS);
+                        return new ReceiveMessagePayload(
+                                messageService.getStartMenu(BotState.USER_PROCESS, chatId),
+                                notificationService.getEmailNotification(userId));
+                    }
+
+                    cache.deleteFromCache(userId);
+                    return new ReceiveMessagePayload(
+                            messageService.getResponse(
+                                    chatId, getReplyText.getReplyText("reply.user.new.banned")));
                 }
-                cache.setUserBotState(username, BotState.USER_IGNORED);
-                return getResponse(
-                                    chatId,
-                                    "Номер телефона уже используется, за такое у нас банят!");
+                case USER_WAIT_KYC -> {
+                    cache.setUserBotState(userId, BotState.USER_WAIT_APPROVE);
+                    userService.updateStatus(userId, UserStatus.WAIT_APPROVE);
+                    return new ReceiveMessagePayload(
+                            messageService.getUserProcessMainMenu(chatId),
+                            notificationService.getMessage(
+                                    userService.getOperatorId(userId),
+                                    getReplyText.getReplyText("notification.user.wait_kyc.ready")));
+                }
             }
         }
 
         if (UserCommand.USER_NO.getCommand().equals(command)){
-            if (botState.equals(BotState.USER_CREATE)) {
-                cache.setUserBotState(username, BotState.USER_START);
-                return userKeyboardService
-                        .getReply(chatId,
-                                "Выбери что-то из предложенного!",
-                                UserKeyboardService.UserKeyboardType.MAIN);
-            }
-            if (botState.equals(BotState.USER_CREATE_CONFIRM)) {
-                userKeyboardService.getReply(chatId,
-                                "Тут будет меню c возможностью исправить информацию!",
-                                UserKeyboardService.UserKeyboardType.MAIN);
+            if (botState.equals(BotState.USER_NEW_CONFIRM)) {
+                cache.setUserBotState(userId, state[0]);
+                return new ReceiveMessagePayload(
+                        messageService.getResponse(
+                                chatId, getReplyText.getReplyText("reply.create." + state[0].getTitle() + ".title")));
             }
         }
 
-        return userKeyboardService.getReply(chatId,
-                        "Выбери что-то из предложенного!",
-                        UserKeyboardService.UserKeyboardType.MAIN);
-    }
-
-    private SendMessage getResponse(long chatId, String text) {
-        SendMessage message = new SendMessage();
-        message.setText(text);
-        message.enableHtml(true);
-        message.setParseMode(ParseMode.HTML);
-        message.setChatId(String.valueOf(chatId));
-        return message;
+        return null;
     }
 }

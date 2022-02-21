@@ -16,13 +16,13 @@ public class AddressService {
         this.addressRepo = addressRepo;
     }
 
-    public Address save(Map<String, String> userInputData) {
+    public Address save(Map<BotState, String> userInputData) {
         Address address = new Address();
-        address.setCountry(userInputData.get(BotState.USER_C_ADDRESS_COUNTRY.name()));
-        address.setRegion(userInputData.get(BotState.USER_C_ADDRESS_REGION.name()));
-        address.setCity(userInputData.get(BotState.USER_C_ADDRESS_CITY.name()));
-        address.setStreet(userInputData.get(BotState.USER_C_ADDRESS_STREET.name()));
-        address.setPostalCode(userInputData.get(BotState.USER_C_ADDRESS_POSTAL_CODE.name()));
+        address.setCountry(userInputData.get(BotState.USER_ADDRESS_COUNTRY));
+        address.setRegion(userInputData.get(BotState.USER_ADDRESS_REGION));
+        address.setCity(userInputData.get(BotState.USER_ADDRESS_CITY));
+        address.setStreet(userInputData.get(BotState.USER_ADDRESS_STREET));
+        address.setPostalCode(userInputData.get(BotState.USER_ADDRESS_POSTAL_CODE));
 
         return addressRepo.save(address);
     }

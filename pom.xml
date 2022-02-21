@@ -63,7 +63,6 @@
             <artifactId>liquibase-core</artifactId>
             <version>4.7.0</version>
         </dependency>
-        <!-- utils -->
         <dependency>
             <groupId>org.telegram</groupId>
             <artifactId>telegrambots-spring-boot-starter</artifactId>

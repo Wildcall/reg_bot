@@ -10,7 +10,7 @@ import java.util.Map;
 public class UserDataCache {
 
     private BotState botState;
-    private Map<String, String> inputData;
+    private Map<BotState, String> inputData;
     private Long lastAction;
 
     public UserDataCache(BotState botState) {
@@ -24,7 +24,7 @@ public class UserDataCache {
         setLastAction();
     }
 
-    public void addData(String key, String value) {
+    public void addData(BotState key, String value) {
         this.inputData.put(key, value);
     }
 

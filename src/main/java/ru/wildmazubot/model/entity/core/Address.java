@@ -1,6 +1,9 @@
 package ru.wildmazubot.model.entity.core;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.Hibernate;
 
 import javax.persistence.*;
@@ -34,7 +37,7 @@ public class Address {
     private String postalCode;
 
     @OneToOne(mappedBy = "address")
-    private Person person;
+    private User user;
 
     @Override
     public boolean equals(Object o) {

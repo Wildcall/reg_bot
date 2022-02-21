@@ -16,6 +16,7 @@
         <setting name="provider-name" value="Hibernate" />
         <datasource-mapping>
           <factory-entry name="RegistrationBot" />
+          <factory-entry name="entityManagerFactory" value="c26d1aa3-4ec8-4b79-8146-a781ed8a2724" />
         </datasource-mapping>
         <naming-strategy-map />
       </configuration>
