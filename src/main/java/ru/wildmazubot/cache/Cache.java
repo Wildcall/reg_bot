@@ -88,5 +88,4 @@ public class Cache {
                             (System.currentTimeMillis() - v.getLastAction()) / 1000));
 
     }
-
 }

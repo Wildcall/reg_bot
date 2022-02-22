@@ -7,13 +7,15 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import ru.wildmazubot.bot.BotState;
 import ru.wildmazubot.bot.command.OperatorCommand;
-import ru.wildmazubot.bot.handler.ReceiveMessagePayload;
-import ru.wildmazubot.bot.handler.service.NotificationService;
+import ru.wildmazubot.bot.handler.ReplyPayload;
 import ru.wildmazubot.bot.handler.service.OperatorSendMessageService;
 import ru.wildmazubot.cache.Cache;
 import ru.wildmazubot.model.entity.UserStatus;
+import ru.wildmazubot.model.entity.core.User;
 import ru.wildmazubot.service.ReplyMessageService;
 import ru.wildmazubot.service.UserService;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -29,63 +31,66 @@ public class OperatorCallbackHandler {
     private final UserService userService;
     private final OperatorSendMessageService messageService;
     private final ReplyMessageService getReplyText;
-    private final NotificationService notificationService;
 
     public OperatorCallbackHandler(Cache cache,
                                    UserService userService,
                                    OperatorSendMessageService messageService,
-                                   ReplyMessageService getReplyText,
-                                   NotificationService notificationService) {
+                                   ReplyMessageService getReplyText) {
         this.cache = cache;
         this.userService = userService;
         this.messageService = messageService;
         this.getReplyText = getReplyText;
-        this.notificationService = notificationService;
     }
 
-    public ReceiveMessagePayload handle(CallbackQuery callbackQuery, BotState botState) {
+    public ReplyPayload handle(CallbackQuery callbackQuery, BotState botState) {
 
         long chatId = callbackQuery.getMessage().getChatId();
         long userId = callbackQuery.getFrom().getId();
         String command = callbackQuery.getData();
+        ReplyPayload reply = new ReplyPayload();
 
         if (OperatorCommand.OPERATOR_START.getCommand().equals(command)) {
-            return messageService.handleInputData(chatId, userId, botState, null);
+            return reply.setMessage(messageService.getOperatorMainMenu(chatId));
         }
 
         if (OperatorCommand.OPERATOR_FILL_DATA.getCommand().equals(command)) {
-            return new ReceiveMessagePayload(
+            return reply.setMessage(
                     messageService.getBackMenu(
-                            chatId, userService.getUsersByStatusString(null, UserStatus.FILL_DATA)));
+                            chatId,
+                            userList(userService.getUsersByStatus(null, UserStatus.FILL_DATA))));
         }
 
         if (OperatorCommand.OPERATOR_WAIT_EMAIL.getCommand().equals(command)) {
-            return new ReceiveMessagePayload(
+            return reply.setMessage(
                     messageService.getBackMenu(
-                            chatId, userService.getUsersByStatusString(userId, UserStatus.WAIT_EMAIL)));
+                            chatId,
+                            userList(userService.getUsersByStatus(userId, UserStatus.WAIT_EMAIL))));
         }
 
         if (OperatorCommand.OPERATOR_WAIT_CL.getCommand().equals(command)) {
-            return new ReceiveMessagePayload(
+            return reply.setMessage(
                     messageService.getBackMenu(
-                            chatId, userService.getUsersByStatusString(userId, UserStatus.WAIT_CL)));
+                            chatId,
+                            userList(userService.getUsersByStatus(userId, UserStatus.WAIT_CL))));
         }
 
         if (OperatorCommand.OPERATOR_WAIT_KYC.getCommand().equals(command)) {
-            return new ReceiveMessagePayload(
+            return reply.setMessage(
                     messageService.getBackMenu(
-                            chatId, userService.getUsersByStatusString(userId, UserStatus.WAIT_KYC)));
+                            chatId,
+                            userList(userService.getUsersByStatus(userId, UserStatus.WAIT_KYC))));
         }
 
         if (OperatorCommand.OPERATOR_WAIT_APPROVE.getCommand().equals(command)) {
-            return new ReceiveMessagePayload(
+            return reply.setMessage(
                     messageService.getBackMenu(
-                            chatId, userService.getUsersByStatusString(userId, UserStatus.WAIT_APPROVE)));
+                            chatId,
+                            userList(userService.getUsersByStatus(userId, UserStatus.WAIT_APPROVE))));
         }
 
         if (OperatorCommand.OPERATOR_LINK.getCommand().equals(command)) {
             if (botState.equals(BotState.OPERATOR_START)){
-                return new ReceiveMessagePayload(
+                return reply.setMessage(
                         messageService.getBackMenu(
                                 chatId, getReplyText.getReplyText("reply.referral.link", String.valueOf(userId))));
             }
@@ -96,13 +101,14 @@ public class OperatorCallbackHandler {
                 cache.deleteFromCache(Long.parseLong(cache.getUserInputData(userId).get(BotState.OPERATOR_CURRENT_USER)));
                 if (!userService.saveEmail(cache.getUserInputData(userId),userId)){
                     cache.setUserBotState(userId, BotState.OPERATOR_EMAIL);
-                    return new ReceiveMessagePayload(
+                    reply.addPayload(
                             messageService.getResponse(
                                     chatId,
-                                    getReplyText.getReplyText("reply.create.email.title")),
-                            notificationService.getMessage(
-                                    chatId,
                                     getReplyText.getReplyText("reply.operator.duplicate.email")));
+                    return reply.setMessage(
+                            messageService.getResponse(
+                                    chatId,
+                                    getReplyText.getReplyText("reply.create.email.title")));
                 }
             }
             if (botState == BotState.OPERATOR_CONFIRM_CL) {
@@ -110,13 +116,13 @@ public class OperatorCallbackHandler {
                 userService.updateStatus(currentUserId, UserStatus.WAIT_KYC);
                 cache.deleteFromCache(currentUserId);
                 cache.setUserBotState(userId, BotState.OPERATOR_START);
-                return new ReceiveMessagePayload(
+                reply.addPayload(messageService.getResponse(
+                        currentUserId,
+                        getReplyText.getReplyText("notification.user.wait_kyc.ready")));
+                return reply.setMessage(
                         messageService.getResponse(
                                 chatId,
-                                getReplyText.getReplyText("reply.operator.ready.to.kyc")),
-                        notificationService.getMessage(
-                                currentUserId,
-                                getReplyText.getReplyText("notification.user.wait_kyc.ready")));
+                                getReplyText.getReplyText("reply.operator.ready.to.kyc")));
             }
             if (botState == BotState.OPERATOR_CONFIRM_APPROVE) {
                 long currentUserId = Long.parseLong(cache.getUserInputData(userId).get(BotState.OPERATOR_CURRENT_USER));
@@ -128,7 +134,7 @@ public class OperatorCallbackHandler {
         if (OperatorCommand.OPERATOR_NO.getCommand().equals(command)) {
             if (botState == BotState.OPERATOR_CONFIRM_EMAIL) {
                 cache.setUserBotState(userId, BotState.OPERATOR_EMAIL);
-                return new ReceiveMessagePayload(
+                return reply.setMessage(
                         messageService.getResponse(
                                 chatId,
                                 getReplyText.getReplyText("reply.create.email.title")));
@@ -137,5 +143,14 @@ public class OperatorCallbackHandler {
 
         cache.setUserBotState(userId, BotState.OPERATOR_START);
         return messageService.handleInputData(chatId, userId, botState, null);
+    }
+
+    private String userList(List<User> users) {
+        if (users == null || users.isEmpty()) {
+            return getReplyText.getReplyText("reply.empty.list");
+        }
+        StringBuilder sb = new StringBuilder();
+        users.forEach(u -> sb.append(u.getUsername()).append("\n"));
+        return sb.toString();
     }
 }

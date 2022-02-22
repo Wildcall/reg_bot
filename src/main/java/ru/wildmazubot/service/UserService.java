@@ -17,24 +17,22 @@ public class UserService {
     private final UserRepo userRepo;
     private final PassportService passportService;
     private final AddressService addressService;
-    private final ReplyMessageService getReplyText;
     private final PhoneService phoneService;
     private final EmailService emailService;
 
     public UserService(UserRepo userRepo,
                        PassportService passportService,
                        AddressService addressService,
-                       ReplyMessageService getReplyText, PhoneService phoneService,
+                       PhoneService phoneService,
                        EmailService emailService) {
         this.userRepo = userRepo;
         this.passportService = passportService;
         this.addressService = addressService;
-        this.getReplyText = getReplyText;
         this.phoneService = phoneService;
         this.emailService = emailService;
     }
 
-    public User createNewUser(long userId, String username, User referrerUser) {
+    public void createNewUser(long userId, String username, User referrerUser) {
         User user = new User();
         user.setId(userId);
         user.setUsername(username);
@@ -45,7 +43,7 @@ public class UserService {
         user.setRegistrationDate(LocalDateTime.now());
         user.setStatusTime(LocalDateTime.now());
 
-        return userRepo.save(user);
+        userRepo.save(user);
     }
 
     public User findById(Long id) {
@@ -71,25 +69,7 @@ public class UserService {
         return userRepo.findAllByUserRole(UserRole.OPERATOR);
     }
 
-    public String getUsersByStatusString(Long userId, UserStatus userStatus) {
-        List<User> users = getUsersByStatus(userId, userStatus);
-        if (users == null) {
-            return getReplyText.getReplyText("reply.empty.list");
-        }
-        return listToString(users);
-    }
-
-    public String getReferralListString(long userId) {
-        List<User> users = getReferralList(userId);
-        if (users == null) {
-            return getReplyText.getReplyText("reply.empty.list");
-        }
-        StringBuilder sb = new StringBuilder();
-        users.forEach(u -> sb.append(u.getUsername()).append("\n"));
-        return sb.toString();
-    }
-
-    private List<User> getReferralList(long userId) {
+    public List<User> getReferralList(long userId) {
         User user = findById(userId);
         if (user != null) {
             List<User> referrals = user.getReferralUsers();
@@ -99,15 +79,12 @@ public class UserService {
         return null;
     }
 
-    private List<User> getUsersByStatus(Long userId, UserStatus userStatus) {
-        List<User> users = userRepo.findAllByStatusAndOperator(userStatus, findById(userId));
-        if (!users.isEmpty())
-            return users;
-        return null;
+    public List<User> getUsersByStatus(Long userId, UserStatus userStatus) {
+        return userRepo.findAllByStatusAndOperator(userStatus, findById(userId));
     }
 
     public boolean saveUserInputData(Map<BotState, String> inputData, long userId) {
-        String phoneNumber = inputData.get(BotState.USER_PHONE_NUMBER);
+        String phoneNumber = inputData.get(BotState.USER_C_NUMBER);
         if (phoneService.existByPhoneNumber(phoneNumber)) {
             updateStatus(userId, UserStatus.BANNED);
             return false;
@@ -160,57 +137,6 @@ public class UserService {
             }
         }
         return userId;
-    }
-
-    private String listToString(List<User> users) {
-        StringBuilder sb = new StringBuilder();
-        users.forEach(u -> sb.append("/").append(u.getId()).append("\n"));
-        return sb.toString();
-    }
-
-    public String userToEmailMsg(long userId) {
-        User user = findById(userId);
-        if (user != null){
-            StringBuilder sb = new StringBuilder();
-            sb.append(user.getPassport().getLastName()).append("\n");
-            sb.append(user.getPassport().getFirstName()).append("\n");
-            sb.append(user.getPassport().getMiddleName()).append("\n");
-            sb.append(user.getPassport().getBirthDay()).append("\n");
-            return sb.toString();
-        }
-        return null;
-    }
-
-    public String userToCoinlist(long userId) {
-        User user = findById(userId);
-        if (user != null){
-            StringBuilder sb = new StringBuilder();
-            sb.append(user.getPassport().getLastName()).append("\n");
-            sb.append(user.getPassport().getFirstName()).append("\n");;
-            sb.append(user.getPassport().getMiddleName()).append("\n");;
-            sb.append(user.getPassport().getBirthDay()).append("\n");
-            sb.append(user.getAddress().getCountry()).append("\n");
-            sb.append(user.getAddress().getRegion()).append("\n");
-            sb.append(user.getAddress().getCity()).append("\n");
-            sb.append(user.getAddress().getStreet()).append("\n");
-            sb.append(user.getAddress().getPostalCode()).append("\n");
-            sb.append(user.getPhone().getNumber()).append("\n");
-            sb.append(user.getEmail().getEmail()).append("\n");
-            sb.append(user.getEmail().getPassword()).append("\n");
-
-            return sb.toString();
-        }
-        return null;
-    }
-
-    public String userToApprove(long userId) {
-        User user = findById(userId);
-        if (user != null){
-            StringBuilder sb = new StringBuilder();
-            sb.append(user.getEmail().getEmail()).append("\n");
-            return sb.toString();
-        }
-        return null;
     }
 
     public void approveUser(long userId, int bonus, int refBonus) {

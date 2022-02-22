@@ -8,22 +8,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class ReceiveMessagePayload {
+public class ReplyPayload {
 
     private BotApiMethod<?> message;
     private List<SendMessage> payload;
 
-    public ReceiveMessagePayload(BotApiMethod<?> message, List<SendMessage> payload) {
-        this.message = message;
-        this.payload = payload;
+    public ReplyPayload() {
+        this.payload = new ArrayList<>();
     }
 
-    public ReceiveMessagePayload(BotApiMethod<?> message) {
+    public ReplyPayload setMessage(SendMessage message) {
         this.message = message;
-        this.payload = new ArrayList<>();
+        return this;
     }
 
     public void addPayload(SendMessage message) {
         this.payload.add(message);
+    }
+
+    public void addPayload(List<SendMessage> messages) {
+        this.payload.addAll(messages);
     }
 }

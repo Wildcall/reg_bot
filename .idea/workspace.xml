@@ -5,38 +5,47 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="bf1f0a62-9bf3-40f5-ba75-6630947bfcb6" name="Changes" comment="ВСЕ РАБОТАЕТ!!!!">
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/dataSources/c26d1aa3-4ec8-4b79-8146-a781ed8a2724.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/c26d1aa3-4ec8-4b79-8146-a781ed8a2724.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/BotState.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/BotState.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/command/UserCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/command/UserCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/ReceiveMessagePayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/ReceiveMessagePayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/TelegramBot.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/TelegramBot.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/ReceiveMessagePayload.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/ReplyPayload.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/UpdateHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/UpdateHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/callback/CallbackHandler.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/callback/OperatorCallbackHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/callback/OperatorCallbackHandler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/callback/UserCallbackHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/callback/UserCallbackHandler.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/message/MassageHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/message/OperatorMessageHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/message/OperatorMessageHandler.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/message/UserMessageHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/message/UserMessageHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/service/NotificationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/service/NotificationService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/service/OperatorSendMessageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/service/OperatorSendMessageService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/service/UserSendMessageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/bot/handler/service/UserSendMessageService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/model/entity/core/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/model/entity/core/User.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/cache/Cache.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/cache/Cache.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/service/AddressService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/service/AddressService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/service/PassportService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/service/PassportService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/service/PhoneService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/service/PhoneService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/service/UserService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/wildmazubot/service/UserService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/db.changelog/db.changelog-master.xml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/db.changelog/db.changelog-master.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/messages_en_EN.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/messages_en_EN.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/telegrambot.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/telegrambot.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/db.changelog/db.changelog-master.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/db.changelog/db.changelog-master.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/messages_en_EN.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/messages_en_EN.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/BotState.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/BotState.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/command/UserCommand.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/command/UserCommand.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/TelegramBot.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/TelegramBot.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/ReceiveMessagePayload.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/UpdateHandler$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/UpdateHandler$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/UpdateHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/UpdateHandler.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/callback/CallbackHandler.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/callback/OperatorCallbackHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/callback/OperatorCallbackHandler.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/callback/UserCallbackHandler$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/callback/UserCallbackHandler$1.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/callback/UserCallbackHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/callback/UserCallbackHandler.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/message/MassageHandler.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/message/OperatorMessageHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/message/OperatorMessageHandler.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/message/UserMessageHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/message/UserMessageHandler.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/service/NotificationService$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/service/NotificationService$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/service/NotificationService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/service/NotificationService.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/service/OperatorSendMessageService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/service/OperatorSendMessageService.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/service/UserSendMessageService$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/service/UserSendMessageService$1.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/service/UserSendMessageService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/bot/handler/service/UserSendMessageService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/model/entity/core/User.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/model/entity/core/User.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/service/AddressService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/service/AddressService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/service/PassportService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/service/PassportService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/service/PhoneService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/service/PhoneService.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/ru/wildmazubot/service/UserService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/ru/wildmazubot/service/UserService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/telegrambot.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/telegrambot.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,6 +63,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RESET_MODE" value="HARD" />
   </component>
   <component name="GitSEFilterConfiguration">
     <file-type-list>

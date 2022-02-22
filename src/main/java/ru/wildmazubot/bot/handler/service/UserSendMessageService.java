@@ -1,16 +1,18 @@
 package ru.wildmazubot.bot.handler.service;
 
-import org.springframework.context.NoSuchMessageException;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import ru.wildmazubot.bot.BotState;
 import ru.wildmazubot.bot.command.UserCommand;
-import ru.wildmazubot.bot.handler.ReceiveMessagePayload;
+import ru.wildmazubot.bot.handler.ReplyPayload;
 import ru.wildmazubot.cache.Cache;
+import ru.wildmazubot.model.entity.core.User;
 import ru.wildmazubot.service.ReplyMessageService;
 import ru.wildmazubot.service.UserService;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,17 +21,16 @@ public class UserSendMessageService {
 
     private final KeyboardService keyboardService;
     private final ReplyMessageService getReplyText;
-    private final NotificationService notificationService;
     private final UserService userService;
     private final Cache cache;
     private static final BotState[] state = BotState.getUserState();
 
     public UserSendMessageService(KeyboardService keyboardService,
                                   ReplyMessageService getReplyText,
-                                  NotificationService notificationService, UserService userService, Cache cache) {
+                                  UserService userService,
+                                  Cache cache) {
         this.keyboardService = keyboardService;
         this.getReplyText = getReplyText;
-        this.notificationService = notificationService;
         this.userService = userService;
         this.cache = cache;
     }
@@ -44,52 +45,126 @@ public class UserSendMessageService {
         return message;
     }
 
-    public ReceiveMessagePayload handleInputData(long chatId,
-                                                 long userId,
-                                                 BotState botState,
-                                                 String text) {
-        if (botState.equals(BotState.USER_ACTIVE_PAYMENT)) {
-            ReceiveMessagePayload messagePayload = new ReceiveMessagePayload(getStartMenu(botState, chatId));
-            messagePayload.addPayload(
-                    new SendMessage(
-                            String.valueOf(userService.getOperatorId(userId)),
-                            text));
-            messagePayload.addPayload(
-                    new SendMessage(
-                            String.valueOf(chatId),
-                            getReplyText.getReplyText("reply.user.active.payment.send")));
-            return messagePayload;
+    public ReplyPayload handleInputData(long chatId,
+                                        long userId,
+                                        BotState botState,
+                                        String text) {
+        ReplyPayload reply = new ReplyPayload();
+//        if (botState.equals(BotState.USER_ACTIVE_PAYMENT)) {
+//            ReplyPayload replyPayload = new ReplyPayload(getStartMenu(botState, chatId));
+//            replyPayload.addPayload(
+//                    new SendMessage(
+//                            String.valueOf(userService.getOperatorId(userId)),
+//                            text));
+//            replyPayload.addPayload(
+//                    new SendMessage(
+//                            String.valueOf(chatId),
+//                            getReplyText.getReplyText("reply.user.active.payment.send")));
+//            return replyPayload;
+//        }
+
+        if (botState.name().startsWith("USER_C_")) {
+            return handleCreateInput(chatId, userId, botState, text);
         }
 
-        int index = contains(botState, state);
+        return reply.setMessage(getStartMenu(botState, chatId));
+    }
 
-        if (index != -1) {
+    private ReplyPayload handleCreateInput(long chatId,
+                                          long userId,
+                                          BotState botState,
+                                          String text){
+        ReplyPayload reply = new ReplyPayload();
 
-            if (!validate(botState, text)) {
-                return new ReceiveMessagePayload(getResponse(
-                        chatId,
-                        getReplyText.getReplyText("reply.create." + botState.getTitle() + ".error")));
+        if (!validate(botState, text)) {
+            return reply.setMessage(getResponse(
+                    chatId,
+                    getReplyText.getReplyText("reply.create." + botState.getTitle() + ".error")));
+
+        }
+        switch (botState) {
+            case USER_C_LAST_NAME -> {
+                cache.addUserInputData(userId, botState, text);
+                cache.setUserBotState(userId, BotState.USER_C_FIRST_NAME);
+                reply.setMessage(
+                        getResponse(
+                                chatId,
+                                getReplyText.getReplyText("reply.create.first.title")));
             }
-
-            cache.addUserInputData(userId, BotState.getUserState()[index], text);
-
-            if (index == state.length - 1) {
+            case USER_C_FIRST_NAME -> {
+                cache.addUserInputData(userId, botState, text);
+                cache.setUserBotState(userId, BotState.USER_C_MIDDLE_NAME);
+                reply.setMessage(
+                        getResponse(
+                                chatId,
+                                getReplyText.getReplyText("reply.create.middle.title")));
+            }
+            case USER_C_MIDDLE_NAME -> {
+                cache.addUserInputData(userId, botState, text);
+                cache.setUserBotState(userId, BotState.USER_C_BIRTHDAY);
+                reply.setMessage(
+                        getResponse(
+                                chatId,
+                                getReplyText.getReplyText("reply.create.birthday.title")));
+            }
+            case USER_C_BIRTHDAY -> {
+                cache.addUserInputData(userId, botState, text);
+                cache.setUserBotState(userId, BotState.USER_C_COUNTRY);
+                reply.setMessage(
+                        getResponse(
+                                chatId,
+                                getReplyText.getReplyText("reply.create.country.title")));
+            }
+            case USER_C_COUNTRY -> {
+                cache.addUserInputData(userId, botState, text);
+                cache.setUserBotState(userId, BotState.USER_C_REGION);
+                reply.setMessage(
+                        getResponse(
+                                chatId,
+                                getReplyText.getReplyText("reply.create.region.title")));
+            }
+            case USER_C_REGION -> {
+                cache.addUserInputData(userId, botState, text);
+                cache.setUserBotState(userId, BotState.USER_C_CITY);
+                reply.setMessage(
+                        getResponse(
+                                chatId,
+                                getReplyText.getReplyText("reply.create.city.title")));
+            }
+            case USER_C_CITY -> {
+                cache.addUserInputData(userId, botState, text);
+                cache.setUserBotState(userId, BotState.USER_C_STREET);
+                reply.setMessage(
+                        getResponse(
+                                chatId,
+                                getReplyText.getReplyText("reply.create.street.title")));
+            }
+            case USER_C_STREET -> {
+                cache.addUserInputData(userId, botState, text);
+                cache.setUserBotState(userId, BotState.USER_C_POSTAL_CODE);
+                reply.setMessage(
+                        getResponse(
+                                chatId,
+                                getReplyText.getReplyText("reply.create.postcode.title")));
+            }
+            case USER_C_POSTAL_CODE -> {
+                cache.addUserInputData(userId, botState, text);
+                cache.setUserBotState(userId, BotState.USER_C_NUMBER);
+                reply.setMessage(
+                        getResponse(
+                                chatId,
+                                getReplyText.getReplyText("reply.create.number.title")));
+            }
+            case USER_C_NUMBER -> {
+                cache.addUserInputData(userId, botState, text);
                 cache.setUserBotState(userId, BotState.USER_NEW_CONFIRM);
-
                 StringBuilder sb = new StringBuilder();
                 cache.getUserInputData(userId).values().forEach(s -> sb.append(s).append("\n"));
-                return new ReceiveMessagePayload(getUserNewConfirmMenu(chatId, sb.toString()));
+                return reply.setMessage(getUserNewConfirmMenu(chatId, sb.toString()));
             }
-
-            cache.addUserInputData(userId, BotState.getUserState()[index], text);
-            cache.setUserBotState(userId, BotState.getUserState()[index + 1]);
-            return new ReceiveMessagePayload(getResponse(chatId,
-                    getReplyText.getReplyText("reply.create."
-                            + state[index + 1].getTitle()
-                            + ".title")));
         }
 
-        return new ReceiveMessagePayload(getStartMenu(botState, chatId));
+        return reply.setMessage(getStartMenu(botState, chatId));
     }
 
     public SendMessage getStartMenu(BotState botState, long chatId) {
@@ -137,7 +212,7 @@ public class UserSendMessageService {
                 UserCommand.USER_HELP.getCommand());
     }
 
-    public SendMessage getUserNewConfirmMenu(long chatId, String ... text) {
+    private SendMessage getUserNewConfirmMenu(long chatId, String ... text) {
         return keyboardService.getReply(chatId,
                 getReplyText.getReplyText("keyboard.user.new.confirm.title", text.length == 1 ? text[0] : null),
                 KeyboardService.UserKeyboardSize.TWO,
@@ -159,42 +234,38 @@ public class UserSendMessageService {
                 UserCommand.USER_HELP.getCommand());
     }
 
-    public SendMessage getBackMenu(long chatId, String text) {
-        try{
-            return keyboardService.getReply(chatId,
-                    getReplyText.getReplyText(text),
-                    KeyboardService.UserKeyboardSize.ONE,
-                    getReplyText.getReplyText("keyboard.back"),
-                    UserCommand.USER_START.getCommand());
-        } catch (NoSuchMessageException e) {
-            return keyboardService.getReply(chatId,
-                    text,
-                    KeyboardService.UserKeyboardSize.ONE,
-                    getReplyText.getReplyText("keyboard.back"),
-                    UserCommand.USER_START.getCommand());
-        }
-    }
-
-    public SendMessage getUserKycMainMenu(long chatId, int bonus) {
+    public SendMessage getBonusMenu(long chatId) {
         return keyboardService.getReply(
                 chatId,
-                getReplyText.getReplyText("keyboard.user.active.bonus.title", bonus),
+                getReplyText.getReplyText("keyboard.user.active.bonus.title"),
                 KeyboardService.UserKeyboardSize.TWO,
-                getReplyText.getReplyText("keyboard.user.active.bonus.payment.method"),
-                UserCommand.USER_PAYMENT.getCommand(),
-                getReplyText.getReplyText("keyboard.back"),
-                UserCommand.USER_START.getCommand());
+                getReplyText.getReplyText("keyboard.user.active.bonus.yes"),
+                UserCommand.USER_YES.getCommand(),
+                getReplyText.getReplyText("keyboard.user.active.bonus.no"),
+                UserCommand.USER_NO.getCommand());
     }
 
-    private static int contains(final BotState v, final BotState[] states) {
-        int result = -1;
-        for (int i = 0; i < states.length; i++) {
-            if(states[i].equals(v)){
-                result = i;
-                break;
-            }
-        }
-        return result;
+    public SendMessage getBackMenu(long chatId) {
+        return keyboardService.getReply(
+                chatId,
+                getReplyText.getReplyText("keyboard.back.title"),
+                KeyboardService.UserKeyboardSize.ONE,
+                getReplyText.getReplyText("keyboard.back"),
+                UserCommand.USER_START.getCommand());
+
+    }
+
+    public List<SendMessage> getEmailNotification(long userId) {
+        String text = getReplyText.getReplyText("notification.operator.user.WAIT_EMAIL", String.valueOf(userId));
+        List<User> operators = userService.findAllOperators();
+        List<SendMessage> notification = new ArrayList<>();
+        operators.forEach(o -> {
+            SendMessage message = new SendMessage();
+            message.setChatId(String.valueOf(o.getId()));
+            message.setText(text);
+            notification.add(message);
+        });
+        return notification;
     }
 
     private static boolean validate(BotState botState, String text) {

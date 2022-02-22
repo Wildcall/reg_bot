@@ -12,16 +12,16 @@ public enum BotState {
     USER_WAIT_KYC                   (0, "", ""),
     USER_WAIT_APPROVE               (0, "", ""),
 
-    USER_PASSPORT_LAST_NAME         (0, "last", "[a-zA-Z]"),
-    USER_PASSPORT_FIRST_NAME        (0, "first", "[a-zA-Z]"),
-    USER_PASSPORT_MIDDLE_NAME       (0, "middle", "[a-zA-Z]"),
-    USER_PASSPORT_BIRTHDAY          (0, "birthday", "(?:0[1-9]|[12][0-9]|3[01])[-/.](?:0[1-9]|1[012])[-/.](?:19\\d{2}|20[01][0-9]|2022)"),
-    USER_ADDRESS_COUNTRY            (0, "country", "[а-яА-Я]"),
-    USER_ADDRESS_REGION             (0, "region", "[а-яА-Я]"),
-    USER_ADDRESS_CITY               (0, "city", "[а-яА-Я]"),
-    USER_ADDRESS_STREET             (0, "street", "[а-яА-Я]"),
-    USER_ADDRESS_POSTAL_CODE        (0, "postcode", "^[0-9]{6}$"),
-    USER_PHONE_NUMBER               (0, "number", "^(7?|8?)[0-9]{10}$"),
+    USER_C_LAST_NAME                (0, "last", "[a-zA-Z]"),
+    USER_C_FIRST_NAME               (0, "first", "[a-zA-Z]"),
+    USER_C_MIDDLE_NAME              (0, "middle", "[a-zA-Z]"),
+    USER_C_BIRTHDAY                 (0, "birthday", "(?:0[1-9]|[12][0-9]|3[01])[-/.](?:0[1-9]|1[012])[-/.](?:19\\d{2}|20[01][0-9]|2022)"),
+    USER_C_COUNTRY                  (0, "country", "[а-яА-Я]"),
+    USER_C_REGION                   (0, "region", "[а-яА-Я]"),
+    USER_C_CITY                     (0, "city", "[а-яА-Я]"),
+    USER_C_STREET                   (0, "street", "[а-яА-Я]"),
+    USER_C_POSTAL_CODE              (0, "postcode", "^[0-9]{6}$"),
+    USER_C_NUMBER                   (0, "number", "^(7?|8?)[0-9]{10}$"),
 
     USER_NEW_CONFIRM                (0, "", ""),
 
@@ -39,16 +39,16 @@ public enum BotState {
     private final String pattern;
 
     private static final BotState[] userState = new BotState[]{
-        BotState.USER_PASSPORT_LAST_NAME,
-        BotState.USER_PASSPORT_FIRST_NAME,
-        BotState.USER_PASSPORT_MIDDLE_NAME,
-        BotState.USER_PASSPORT_BIRTHDAY,
-        BotState.USER_ADDRESS_COUNTRY,
-        BotState.USER_ADDRESS_REGION,
-        BotState.USER_ADDRESS_CITY,
-        BotState.USER_ADDRESS_STREET,
-        BotState.USER_ADDRESS_POSTAL_CODE,
-        BotState.USER_PHONE_NUMBER};
+        BotState.USER_C_LAST_NAME,
+        BotState.USER_C_FIRST_NAME,
+        BotState.USER_C_MIDDLE_NAME,
+        BotState.USER_C_BIRTHDAY,
+        BotState.USER_C_COUNTRY,
+        BotState.USER_C_REGION,
+        BotState.USER_C_CITY,
+        BotState.USER_C_STREET,
+        BotState.USER_C_POSTAL_CODE,
+        BotState.USER_C_NUMBER};
 
     private static final BotState[] operatorState = new BotState[]{
             BotState.OPERATOR_EMAIL,

@@ -6,8 +6,10 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.wildmazubot.bot.BotState;
-import ru.wildmazubot.bot.handler.callback.CallbackHandler;
-import ru.wildmazubot.bot.handler.message.MassageHandler;
+import ru.wildmazubot.bot.handler.callback.OperatorCallbackHandler;
+import ru.wildmazubot.bot.handler.callback.UserCallbackHandler;
+import ru.wildmazubot.bot.handler.message.OperatorMessageHandler;
+import ru.wildmazubot.bot.handler.message.UserMessageHandler;
 import ru.wildmazubot.cache.Cache;
 import ru.wildmazubot.model.entity.UserRole;
 import ru.wildmazubot.model.entity.UserStatus;
@@ -18,31 +20,43 @@ import ru.wildmazubot.service.UserService;
 @Service
 public class UpdateHandler {
 
-    private final CallbackHandler callbackHandler;
-    private final MassageHandler messageHandler;
     private final Cache cache;
     private final UserService userService;
+    private final UserMessageHandler userMessageHandler;
+    private final OperatorMessageHandler operatorMessageHandler;
+    private final UserCallbackHandler userCallbackHandler;
+    private final OperatorCallbackHandler operatorCallbackHandler;
 
-    public UpdateHandler(CallbackHandler callbackHandler,
-                         MassageHandler messageHandler,
-                         Cache cache,
-                         UserService userService) {
-        this.callbackHandler = callbackHandler;
-        this.messageHandler = messageHandler;
+    public UpdateHandler(Cache cache,
+                         UserService userService,
+                         UserMessageHandler userMessageHandler,
+                         OperatorMessageHandler operatorMessageHandler,
+                         UserCallbackHandler userCallbackHandler,
+                         OperatorCallbackHandler operatorCallbackHandler) {
+
         this.cache = cache;
         this.userService = userService;
+        this.userMessageHandler = userMessageHandler;
+        this.operatorMessageHandler = operatorMessageHandler;
+        this.userCallbackHandler = userCallbackHandler;
+        this.operatorCallbackHandler = operatorCallbackHandler;
     }
 
-    public ReceiveMessagePayload handle(Update update) {
+    public ReplyPayload handle(Update update) {
 
         CallbackQuery callbackQuery = update.getCallbackQuery();
         if (callbackQuery != null) {
             long userId = update.getCallbackQuery().getFrom().getId();
             String username = update.getCallbackQuery().getFrom().getUserName();
             String userData = update.getCallbackQuery().getData();
+            BotState botState = auth(userId, username, userData);
 
-            if (!auth(userId, username, userData).equals(BotState.USER_IGNORED)) {
-                return callbackHandler.handle(callbackQuery, auth(userId, username, userData));
+            if (!BotState.USER_IGNORED.equals(botState)) {
+                return switch (botState.getCode()) {
+                    case 0 -> userCallbackHandler.handle(callbackQuery, botState);
+                    case 1 -> operatorCallbackHandler.handle(callbackQuery, botState);
+                    default -> null;
+                };
             }
         }
 
@@ -51,9 +65,14 @@ public class UpdateHandler {
             long userId = update.getMessage().getFrom().getId();
             String username = update.getMessage().getFrom().getUserName();
             String userData = update.getMessage().getText();
+            BotState botState = auth(userId, username, userData);
 
-            if (!auth(userId, username, userData).equals(BotState.USER_IGNORED)) {
-                return messageHandler.handle(message, auth(userId, username, userData));
+            if (!BotState.USER_IGNORED.equals(botState)) {
+                return switch (botState.getCode()) {
+                    case 0 -> userMessageHandler.handle(message, botState);
+                    case 1 -> operatorMessageHandler.handle(message, botState);
+                    default -> null;
+                };
             }
         }
 

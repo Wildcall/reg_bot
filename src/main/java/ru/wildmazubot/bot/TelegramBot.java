@@ -6,10 +6,9 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import ru.wildmazubot.bot.handler.ReceiveMessagePayload;
+import ru.wildmazubot.bot.handler.ReplyPayload;
 import ru.wildmazubot.bot.handler.UpdateHandler;
 
 @Slf4j
@@ -47,19 +46,19 @@ public class TelegramBot extends TelegramWebhookBot {
 
     @Override
     public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
-        ReceiveMessagePayload messagePayload = updateHandler.handle(update);
-        if (messagePayload == null)
+        ReplyPayload replyPayload = updateHandler.handle(update);
+        if (replyPayload == null)
             return null;
-        if (messagePayload.getPayload() == null)
-            return messagePayload.getMessage();
+        if (replyPayload.getPayload() == null)
+            return replyPayload.getMessage();
 
-        messagePayload.getPayload().forEach(msg -> {
+        replyPayload.getPayload().forEach(msg -> {
             try {
                 execute(msg);
             } catch (TelegramApiException e) {
                 log.info(e.getMessage());
             }
         });
-        return messagePayload.getMessage();
+        return replyPayload.getMessage();
     }
 }
