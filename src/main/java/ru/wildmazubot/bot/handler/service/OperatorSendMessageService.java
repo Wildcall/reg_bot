@@ -45,6 +45,7 @@ public class OperatorSendMessageService {
 
     public ReplyPayload handleInputData(long chatId,
                                         long userId,
+                                        Integer messageId,
                                         BotState botState,
                                         String text) {
         ReplyPayload reply = new ReplyPayload();
@@ -62,7 +63,7 @@ public class OperatorSendMessageService {
                 }
                 if (addEmail(operator, user)){
                     cache.addUserInputData(userId, BotState.OPERATOR_CURRENT_USER, String.valueOf(user.getId()));
-                    cache.setUserBotState(userId, BotState.OPERATOR_EMAIL);
+                    cache.setUserBotState(userId, messageId, BotState.OPERATOR_EMAIL);
                     reply.addPayload(getResponse(
                             chatId,
                             dataForEmailRegistration(userService.findById(user.getId()))));
@@ -73,7 +74,7 @@ public class OperatorSendMessageService {
                 }
                 if (regCl(operator, user)){
                     cache.addUserInputData(userId, BotState.OPERATOR_CURRENT_USER, String.valueOf(user.getId()));
-                    cache.setUserBotState(userId, BotState.OPERATOR_CONFIRM_CL);
+                    cache.setUserBotState(userId, messageId, BotState.OPERATOR_CONFIRM_CL);
                     reply.addPayload(
                             getResponse(
                                     chatId,
@@ -85,7 +86,7 @@ public class OperatorSendMessageService {
                 }
                 if (approve(operator, user)){
                     cache.addUserInputData(userId, BotState.OPERATOR_CURRENT_USER, String.valueOf(user.getId()));
-                    cache.setUserBotState(userId, BotState.OPERATOR_CONFIRM_APPROVE);
+                    cache.setUserBotState(userId, messageId, BotState.OPERATOR_CONFIRM_APPROVE);
                     reply.addPayload(
                             getResponse(
                                     chatId,
@@ -100,7 +101,7 @@ public class OperatorSendMessageService {
 
         if (botState.equals(BotState.OPERATOR_EMAIL)) {
             cache.addUserInputData(userId, BotState.OPERATOR_EMAIL, text);
-            cache.setUserBotState(userId, BotState.OPERATOR_PASSWORD);
+            cache.setUserBotState(userId, messageId, BotState.OPERATOR_PASSWORD);
             return reply.setMessage(
                     getResponse(
                             chatId,
@@ -109,7 +110,7 @@ public class OperatorSendMessageService {
 
         if (botState.equals(BotState.OPERATOR_PASSWORD)) {
             cache.addUserInputData(userId, BotState.OPERATOR_PASSWORD, text);
-            cache.setUserBotState(userId, BotState.OPERATOR_CONFIRM_EMAIL);
+            cache.setUserBotState(userId, messageId, BotState.OPERATOR_CONFIRM_EMAIL);
 
             StringBuilder sb = new StringBuilder();
             cache.getUserInputData(userId).values().forEach(s -> sb.append(s).append("\n"));

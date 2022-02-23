@@ -11,22 +11,22 @@ import java.util.List;
 public class ReplyPayload {
 
     private BotApiMethod<?> message;
-    private List<SendMessage> payload;
+    private List<BotApiMethod<?>> payload;
 
     public ReplyPayload() {
         this.payload = new ArrayList<>();
     }
 
-    public ReplyPayload setMessage(SendMessage message) {
+    public ReplyPayload setMessage(BotApiMethod<?> message) {
         this.message = message;
         return this;
     }
 
-    public void addPayload(SendMessage message) {
+    public void addPayload(BotApiMethod<?> message) {
         this.payload.add(message);
     }
 
-    public void addPayload(List<SendMessage> messages) {
+    public void addPayload(List<BotApiMethod<?>> messages) {
         this.payload.addAll(messages);
     }
 }

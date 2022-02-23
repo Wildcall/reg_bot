@@ -37,7 +37,7 @@ public class KeyboardService {
         return message;
     }
 
-    private ReplyKeyboard getKeyboard(UserKeyboardSize type, String ... buttonsText) {
+    public ReplyKeyboard getKeyboard(UserKeyboardSize type, String ... buttonsText) {
         return switch (type) {
             case ONE -> getOneKeyboard(buttonsText);
             case TWO -> getTwoKeyboard(buttonsText);

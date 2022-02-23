@@ -16,11 +16,11 @@ public class UserMessageHandler {
     }
 
     public ReplyPayload handle(Message message, BotState botState) {
-
+        Integer messageId = message.getMessageId();
         long userId = message.getFrom().getId();
         long chatId = message.getChatId();
         String text = message.getText();
 
-        return messageService.handleInputData(chatId, userId, botState, text);
+        return messageService.handleInputData(chatId, userId, messageId, botState, text);
     }
 }

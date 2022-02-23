@@ -6,8 +6,10 @@ import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import ru.wildmazubot.bot.BotState;
 import ru.wildmazubot.bot.command.UserCommand;
 import ru.wildmazubot.bot.handler.ReplyPayload;
+import ru.wildmazubot.bot.handler.service.KeyboardService;
 import ru.wildmazubot.bot.handler.service.UserSendMessageService;
 import ru.wildmazubot.cache.Cache;
+import ru.wildmazubot.cache.UserDataCache;
 import ru.wildmazubot.model.entity.UserStatus;
 import ru.wildmazubot.model.entity.core.User;
 import ru.wildmazubot.service.ReplyMessageService;
@@ -23,22 +25,27 @@ public class UserCallbackHandler {
     private final UserService userService;
     private final UserSendMessageService messageService;
     private final ReplyMessageService getReplyText;
+    private final KeyboardService keyboardService;
 
     public UserCallbackHandler(Cache cache,
                                UserService userService,
                                UserSendMessageService messageService,
-                               ReplyMessageService getReplyText) {
+                               ReplyMessageService getReplyText, KeyboardService keyboardService) {
         this.cache = cache;
         this.userService = userService;
         this.messageService = messageService;
         this.getReplyText = getReplyText;
+        this.keyboardService = keyboardService;
     }
 
     public ReplyPayload handle(CallbackQuery callbackQuery,
                                BotState botState) {
         long chatId = callbackQuery.getMessage().getChatId();
         long userId = callbackQuery.getFrom().getId();
+        Integer messageId = callbackQuery.getMessage().getMessageId();
         String command = callbackQuery.getData();
+        UserDataCache dataCache = cache.getUserDataCache(userId);
+
         ReplyPayload reply = new ReplyPayload();
 
         if (UserCommand.USER_START.getCommand().equals(command)){
@@ -50,7 +57,11 @@ public class UserCallbackHandler {
 
         if (UserCommand.USER_NEW_CREATE.getCommand().equals(command)){
             if (BotState.USER_NEW.equals(botState)){
-                cache.setUserBotState(userId, BotState.USER_C_LAST_NAME);
+                cache.setUserBotState(userId, messageId, BotState.USER_C_LAST_NAME);
+                reply.addPayload(
+                        messageService.getDeleteMessage(
+                                chatId,
+                                messageId));
                 return reply.setMessage(
                         messageService.getResponse(
                                 chatId,
@@ -61,15 +72,20 @@ public class UserCallbackHandler {
         if (UserCommand.USER_HELP.getCommand().equals(command)){
             switch (botState) {
                 case USER_NEW -> {
-                    cache.setUserBotState(userId, BotState.USER_NEW);
+                    cache.setUserBotState(userId, messageId, BotState.USER_NEW);
                     reply.addPayload(messageService.getResponse(
                             chatId,
                             getReplyText.getReplyText("reply.new.help")));
-                    return reply.setMessage(
-                            messageService.getBackMenu(chatId));
+                    return reply.setMessage(messageService.getEditMessageReplyMarkup(
+                            chatId,
+                            messageId,
+                            keyboardService.getKeyboard(
+                                    KeyboardService.UserKeyboardSize.ONE,
+                                    getReplyText.getReplyText("keyboard.back"),
+                                    UserCommand.USER_START.getCommand())));
                 }
                 case USER_PROCESS -> {
-                    cache.setUserBotState(userId, BotState.USER_PROCESS);
+                    cache.setUserBotState(userId, messageId, BotState.USER_PROCESS);
                     reply.addPayload(messageService.getResponse(
                             chatId,
                             getReplyText.getReplyText("reply.process.help")));
@@ -77,7 +93,7 @@ public class UserCallbackHandler {
                             messageService.getBackMenu(chatId));
                 }
                 case USER_WAIT_KYC -> {
-                    cache.setUserBotState(userId, BotState.USER_WAIT_KYC);
+                    cache.setUserBotState(userId, messageId, BotState.USER_WAIT_KYC);
                     reply.addPayload(messageService.getResponse(
                             chatId,
                             getReplyText.getReplyText("reply.waitkyc.help")));
@@ -85,7 +101,7 @@ public class UserCallbackHandler {
                             messageService.getBackMenu(chatId));
                 }
                 case USER_WAIT_APPROVE -> {
-                    cache.setUserBotState(userId, BotState.USER_WAIT_APPROVE);
+                    cache.setUserBotState(userId, messageId, BotState.USER_WAIT_APPROVE);
                     reply.addPayload(messageService.getResponse(
                             chatId,
                             getReplyText.getReplyText("reply.waitapprove.help")));
@@ -93,7 +109,7 @@ public class UserCallbackHandler {
                             messageService.getBackMenu(chatId));
                 }
                 case USER_ACTIVE -> {
-                    cache.setUserBotState(userId, BotState.USER_ACTIVE);
+                    cache.setUserBotState(userId, messageId, BotState.USER_ACTIVE);
                     reply.addPayload(messageService.getResponse(
                             chatId,
                             getReplyText.getReplyText("reply.active.help")));
@@ -128,7 +144,7 @@ public class UserCallbackHandler {
         if (UserCommand.USER_BONUSES.getCommand().equals(command)){
             if (botState.equals(BotState.USER_ACTIVE)){
                 User user = userService.findById(userId);
-                cache.setUserBotState(userId, BotState.USER_ACTIVE_PAYMENT);
+                cache.setUserBotState(userId, messageId, BotState.USER_ACTIVE_PAYMENT);
                 reply.addPayload(
                         messageService.getResponse(
                                 chatId,
@@ -143,7 +159,7 @@ public class UserCallbackHandler {
                 case USER_NEW_CONFIRM -> {
                     if (userService.saveUserInputData(cache.getUserInputData(userId), userId)) {
                         cache.deleteFromCache(userId);
-                        cache.setUserBotState(userId, BotState.USER_PROCESS);
+                        cache.setUserBotState(userId, messageId, BotState.USER_PROCESS);
                         reply.addPayload(
                                 messageService.getEmailNotification(userId));
                         return reply.setMessage(
@@ -156,7 +172,7 @@ public class UserCallbackHandler {
                                     chatId, getReplyText.getReplyText("reply.user.new.banned")));
                 }
                 case USER_WAIT_KYC -> {
-                    cache.setUserBotState(userId, BotState.USER_WAIT_APPROVE);
+                    cache.setUserBotState(userId, messageId, BotState.USER_WAIT_APPROVE);
                     userService.updateStatus(userId, UserStatus.WAIT_APPROVE);
                     reply.addPayload(messageService.getResponse(
                             userService.getOperatorId(userId),
@@ -173,13 +189,13 @@ public class UserCallbackHandler {
         if (UserCommand.USER_NO.getCommand().equals(command)){
             switch (botState) {
                 case USER_NEW_CONFIRM -> {
-                    cache.setUserBotState(userId, BotState.USER_C_LAST_NAME);
+                    cache.setUserBotState(userId, messageId, BotState.USER_C_LAST_NAME);
                     return reply.setMessage(
                             messageService.getResponse(
                                     chatId, getReplyText.getReplyText("reply.create.last.title")));
                 }
                 case USER_ACTIVE_PAYMENT -> {
-                    cache.setUserBotState(userId, BotState.USER_ACTIVE);
+                    cache.setUserBotState(userId, messageId, BotState.USER_ACTIVE);
                     return reply.setMessage(
                             messageService.getStartMenu(BotState.USER_ACTIVE, chatId));
                 }

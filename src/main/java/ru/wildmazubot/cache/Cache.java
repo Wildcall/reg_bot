@@ -35,11 +35,11 @@ public class Cache {
         return usersDataCache.get(userId).getInputData();
     }
 
-    public void setUserBotState(long userId, BotState botState) {
+    public void setUserBotState(long userId, Integer messageId, BotState botState) {
         UserDataCache dataCache = usersDataCache.get(userId);
         if (dataCache == null)
-            dataCache = new UserDataCache(botState);
-        dataCache.setBotState(botState);
+            dataCache = new UserDataCache(messageId, botState);
+        dataCache.setBotState(messageId, botState);
         usersDataCache.put(userId, dataCache);
     }
 
@@ -56,6 +56,10 @@ public class Cache {
 
     public void deleteFromCache(long userId) {
         usersDataCache.remove(userId);
+    }
+
+    public UserDataCache getUserDataCache(long userId) {
+        return usersDataCache.get(userId);
     }
 
     @Scheduled(fixedDelayString = "${fixedDelay.in.milliseconds}",
@@ -81,10 +85,11 @@ public class Cache {
     @Scheduled(fixedDelayString = "${cache.debug.delay}")
     private void printCache() {
         if (debug)
-            usersDataCache.forEach((k, v) -> log.info("{} / {} / {} / {} sec.",
+            usersDataCache.forEach((k, v) -> log.info("{} / {} / {} / {} / {} sec.",
                             String.format("%1$"+ 15 + "s", k),
                             String.format("%1$"+ 10 + "s", v.getBotState()),
                             v.getInputData().values(),
+                            v.getMessageId(),
                             (System.currentTimeMillis() - v.getLastAction()) / 1000));
 
     }

@@ -46,6 +46,7 @@ public class OperatorCallbackHandler {
 
         long chatId = callbackQuery.getMessage().getChatId();
         long userId = callbackQuery.getFrom().getId();
+        Integer messageId = callbackQuery.getMessage().getMessageId();
         String command = callbackQuery.getData();
         ReplyPayload reply = new ReplyPayload();
 
@@ -92,7 +93,8 @@ public class OperatorCallbackHandler {
             if (botState.equals(BotState.OPERATOR_START)){
                 return reply.setMessage(
                         messageService.getBackMenu(
-                                chatId, getReplyText.getReplyText("reply.referral.link", String.valueOf(userId))));
+                                chatId,
+                                getReplyText.getReplyText("keyboard.referral", String.valueOf(userId))));
             }
         }
 
@@ -100,7 +102,7 @@ public class OperatorCallbackHandler {
             if (botState == BotState.OPERATOR_CONFIRM_EMAIL) {
                 cache.deleteFromCache(Long.parseLong(cache.getUserInputData(userId).get(BotState.OPERATOR_CURRENT_USER)));
                 if (!userService.saveEmail(cache.getUserInputData(userId),userId)){
-                    cache.setUserBotState(userId, BotState.OPERATOR_EMAIL);
+                    cache.setUserBotState(userId, messageId, BotState.OPERATOR_EMAIL);
                     reply.addPayload(
                             messageService.getResponse(
                                     chatId,
@@ -115,7 +117,7 @@ public class OperatorCallbackHandler {
                 long currentUserId = Long.parseLong(cache.getUserInputData(userId).get(BotState.OPERATOR_CURRENT_USER));
                 userService.updateStatus(currentUserId, UserStatus.WAIT_KYC);
                 cache.deleteFromCache(currentUserId);
-                cache.setUserBotState(userId, BotState.OPERATOR_START);
+                cache.setUserBotState(userId, messageId, BotState.OPERATOR_START);
                 reply.addPayload(messageService.getResponse(
                         currentUserId,
                         getReplyText.getReplyText("notification.user.wait_kyc.ready")));
@@ -133,7 +135,7 @@ public class OperatorCallbackHandler {
 
         if (OperatorCommand.OPERATOR_NO.getCommand().equals(command)) {
             if (botState == BotState.OPERATOR_CONFIRM_EMAIL) {
-                cache.setUserBotState(userId, BotState.OPERATOR_EMAIL);
+                cache.setUserBotState(userId, messageId, BotState.OPERATOR_EMAIL);
                 return reply.setMessage(
                         messageService.getResponse(
                                 chatId,
@@ -141,8 +143,8 @@ public class OperatorCallbackHandler {
             }
         }
 
-        cache.setUserBotState(userId, BotState.OPERATOR_START);
-        return messageService.handleInputData(chatId, userId, botState, null);
+        cache.setUserBotState(userId, messageId, BotState.OPERATOR_START);
+        return messageService.handleInputData(chatId, userId, messageId, botState, null);
     }
 
     private String userList(List<User> users) {
