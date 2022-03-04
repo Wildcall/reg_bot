@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="bf1f0a62-9bf3-40f5-ba75-6630947bfcb6" name="Changes" comment="Update port">
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/registration-bot-0.1.0.jar" beforeDir="false" afterPath="$PROJECT_DIR$/target/registration-bot-0.1.0.jar" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/registration-bot-0.1.0.jar.original" beforeDir="false" afterPath="$PROJECT_DIR$/target/registration-bot-0.1.0.jar.original" afterDir="false" />
+    <list default="true" id="bf1f0a62-9bf3-40f5-ba75-6630947bfcb6" name="Changes" comment="Change port properties">
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -181,7 +179,7 @@
       <workItem from="1646212102944" duration="16294000" />
       <workItem from="1646370950407" duration="19126000" />
       <workItem from="1646395884425" duration="1000" />
-      <workItem from="1646395943551" duration="2190000" />
+      <workItem from="1646395943551" duration="2850000" />
     </task>
     <task id="LOCAL-00001" summary="Implement main bot functions">
       <created>1645020935208</created>
@@ -253,7 +251,14 @@
       <option name="project" value="LOCAL" />
       <updated>1646398145718</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Change port properties">
+      <created>1646398756191</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1646398756191</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -280,7 +285,8 @@
     <MESSAGE value="Добавление текущего сообщения от бота" />
     <MESSAGE value="Добавил российскую локализацию" />
     <MESSAGE value="Update port" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update port" />
+    <MESSAGE value="Change port properties" />
+    <option name="LAST_COMMIT_MESSAGE" value="Change port properties" />
   </component>
   <component name="XDebuggerManager">
     <pin-to-top-manager>
