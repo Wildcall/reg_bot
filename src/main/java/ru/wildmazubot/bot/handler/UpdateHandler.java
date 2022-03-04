@@ -1,5 +1,6 @@
 package ru.wildmazubot.bot.handler;
 
+import liquibase.pro.packaged.S;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -11,6 +12,7 @@ import ru.wildmazubot.bot.handler.callback.UserCallbackHandler;
 import ru.wildmazubot.bot.handler.message.OperatorMessageHandler;
 import ru.wildmazubot.bot.handler.message.UserMessageHandler;
 import ru.wildmazubot.cache.Cache;
+import ru.wildmazubot.cache.UserDataCache;
 import ru.wildmazubot.model.entity.UserRole;
 import ru.wildmazubot.model.entity.UserStatus;
 import ru.wildmazubot.model.entity.core.User;
@@ -43,24 +45,24 @@ public class UpdateHandler {
     }
 
     public ReplyPayload handle(Update update) {
-        long userId;
-        Integer messageId;
-        String username;
-        String userData;
-        BotState botState;
 
         CallbackQuery callbackQuery = update.getCallbackQuery();
         if (callbackQuery != null) {
-            userId = update.getCallbackQuery().getFrom().getId();
-            messageId = update.getCallbackQuery().getMessage().getMessageId();
-            username = update.getCallbackQuery().getFrom().getUserName();
-            userData = update.getCallbackQuery().getData();
-            botState = auth(userId, messageId, username, userData);
+            long userId = update.getCallbackQuery().getFrom().getId();
+            long chatId = update.getCallbackQuery().getMessage().getChatId();
+            Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
+            String userData = callbackQuery.getData();
+            String username = update.getCallbackQuery().getFrom().getUserName();
+
+            BotState botState = auth(userId, messageId, username, userData);
+
+            UserDataCache dataCache = cache.getUserDataCache(userId);
+            String command = userData.replaceFirst(String.valueOf(dataCache.getSessionToken()), "");
 
             if (!BotState.USER_IGNORED.equals(botState)) {
                 return switch (botState.getCode()) {
-                    case 0 -> userCallbackHandler.handle(callbackQuery, botState);
-                    case 1 -> operatorCallbackHandler.handle(callbackQuery, botState);
+                    case 0 -> userCallbackHandler.handle(botState, chatId, userId, messageId, dataCache, command);
+                    case 1 -> operatorCallbackHandler.handle(botState, chatId, userId, messageId, dataCache, command);
                     default -> null;
                 };
             }
@@ -68,16 +70,20 @@ public class UpdateHandler {
 
         Message message = update.getMessage();
         if (message != null && message.hasText()) {
-            messageId = message.getMessageId();
-            userId = update.getMessage().getFrom().getId();
-            username = update.getMessage().getFrom().getUserName();
-            userData = update.getMessage().getText();
-            botState = auth(userId, messageId, username, userData);
+            long chatId = message.getChatId();
+            long userId = update.getMessage().getFrom().getId();
+            Integer messageId = message.getMessageId();
+            String text = update.getMessage().getText();
+            String username = update.getMessage().getFrom().getUserName();
+
+            BotState botState = auth(userId, messageId, username, text);
+
+            UserDataCache dataCache = cache.getUserDataCache(userId);
 
             if (!BotState.USER_IGNORED.equals(botState)) {
                 return switch (botState.getCode()) {
-                    case 0 -> userMessageHandler.handle(message, botState);
-                    case 1 -> operatorMessageHandler.handle(message, botState);
+                    case 0 -> userMessageHandler.handle(botState, chatId, userId, messageId, dataCache, text);
+                    case 1 -> operatorMessageHandler.handle(botState, chatId, userId, messageId, dataCache, text);
                     default -> null;
                 };
             }
@@ -87,10 +93,15 @@ public class UpdateHandler {
     }
 
     private BotState auth(long userId, Integer messageId, String username, String text) {
-        BotState botState = cache.getUserBotState(userId);
 
-        if (botState != null) {
-            return botState;
+        if (text.startsWith("/start")) {
+            cache.deleteFromCache(userId);
+        } else {
+            BotState botState = cache.getUserBotState(userId);
+
+            if (botState != null) {
+                return botState;
+            }
         }
 
         User user = userService.findById(userId);
@@ -106,7 +117,7 @@ public class UpdateHandler {
                         cache.setUserBotState(userId, messageId, BotState.USER_NEW);
                         return BotState.USER_NEW;
                     }
-                    case WAIT_EMAIL, WAIT_CL -> {
+                    case WAIT_EMAIL, WAIT_CL, FILL_DATA -> {
                         cache.setUserBotState(userId, messageId, BotState.USER_PROCESS);
                         return BotState.USER_PROCESS;
                     }

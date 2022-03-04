@@ -1,6 +1,7 @@
 package ru.wildmazubot.cache;
 
 import lombok.Data;
+import lombok.Getter;
 import ru.wildmazubot.bot.BotState;
 
 import java.util.LinkedHashMap;
@@ -12,6 +13,7 @@ public class UserDataCache {
 
     private BotState botState;
     private Integer messageId;
+    @Getter
     private long sessionToken;
     private Map<BotState, String> inputData;
     private Long lastAction;

@@ -5,12 +5,16 @@ package ru.wildmazubot.bot;
 public enum BotState {
     USER_IGNORED                    (0, "", ""),
     USER_NEW                        (0, "", ""),
+    USER_NEW_CONFIRM                (0, "", ""),
     USER_PROCESS                    (0, "", ""),
-    USER_ACTIVE                     (0, "", ""),
-    USER_ACTIVE_PAYMENT             (0, "", ""),
 
+    USER_READY_TO_KYC               (0, "", ""),
     USER_WAIT_KYC                   (0, "", ""),
     USER_WAIT_APPROVE               (0, "", ""),
+
+    USER_ACTIVE                     (0, "", ""),
+    USER_ACTIVE_PAYMENT             (0, "", ""),
+    USER_ACTIVE_PAYMENT_METHOD      (0, "", ""),
 
     USER_C_LAST_NAME                (0, "last", "[a-zA-Z]"),
     USER_C_FIRST_NAME               (0, "first", "[a-zA-Z]"),
@@ -23,7 +27,6 @@ public enum BotState {
     USER_C_POSTAL_CODE              (0, "postcode", "^[0-9]{6}$"),
     USER_C_NUMBER                   (0, "number", "^(7?|8?)[0-9]{10}$"),
 
-    USER_NEW_CONFIRM                (0, "", ""),
 
     OPERATOR_START                  (1, "", ""),
     OPERATOR_EMAIL                  (1, "email", ""),

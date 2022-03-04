@@ -101,16 +101,16 @@ public class UserService {
     }
 
     public boolean saveEmail(Map<BotState, String> inputData, long operatorId) {
-        String email = inputData.get(BotState.OPERATOR_PASSWORD);
+        String email = inputData.get(BotState.OPERATOR_EMAIL);
+
         if (emailService.existByEmail(email)) {
             return false;
         }
+
         User operator = findById(operatorId);
         if (operator != null){
-            long currenUserId;
             try {
-                currenUserId = Long.parseLong(inputData.get(BotState.OPERATOR_CURRENT_USER));
-                User currentUser = findById(currenUserId);
+                User currentUser = findById(Long.parseLong(inputData.get(BotState.OPERATOR_CURRENT_USER)));
                 if (currentUser != null) {
                     if (currentUser.getEmail() == null) {
                         currentUser.setEmail(emailService.save(inputData));
@@ -123,6 +123,7 @@ public class UserService {
                     }
                 }
             } catch (NumberFormatException ignored) {
+                return false;
             }
         }
         return false;

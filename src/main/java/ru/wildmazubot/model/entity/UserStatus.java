@@ -5,6 +5,7 @@ public enum UserStatus {
     FILL_DATA,
     WAIT_EMAIL,
     WAIT_CL,
+    READY_TO_KYC,
     WAIT_KYC,
     WAIT_APPROVE,
     ACTIVE,

@@ -1,13 +1,13 @@
 package ru.wildmazubot.bot.handler.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.NoSuchMessageException;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import ru.wildmazubot.bot.BotState;
 import ru.wildmazubot.bot.command.OperatorCommand;
 import ru.wildmazubot.bot.command.UserCommand;
 import ru.wildmazubot.service.ReplyMessageService;
@@ -18,26 +18,13 @@ import java.util.ArrayList;
 @Service
 public class KeyboardService {
 
-    private final ReplyMessageService messageService;
+    private final ReplyMessageService getReplyText;
 
-    public KeyboardService(ReplyMessageService messageService) {
-        this.messageService = messageService;
+    public KeyboardService(ReplyMessageService getReplyText) {
+        this.getReplyText = getReplyText;
     }
 
-    public SendMessage getReply(long chatId,
-                                String text,
-                                UserKeyboardSize type,
-                                String ... buttonsText) {
-        SendMessage message = new SendMessage();
-        message.setText(text);
-        message.enableHtml(true);
-        message.setParseMode(ParseMode.HTML);
-        message.setChatId(String.valueOf(chatId));
-        message.setReplyMarkup(getKeyboard(type, buttonsText));
-        return message;
-    }
-
-    public ReplyKeyboard getKeyboard(UserKeyboardSize type, String ... buttonsText) {
+    public ReplyKeyboard getKeyboard(KeyboardSize type, String ... buttonsText) {
         return switch (type) {
             case ONE -> getOneKeyboard(buttonsText);
             case TWO -> getTwoKeyboard(buttonsText);
@@ -46,6 +33,86 @@ public class KeyboardService {
             case FIVE -> getFiveKeyboard(buttonsText);
             case SIX -> getSixKeyboard(buttonsText);
         };
+    }
+
+    public ReplyKeyboard getStartKeyboard(BotState botState, long token) {
+        return switch (botState) {
+            case USER_NEW                           -> getUserNewMainKeyboard(token);
+            case USER_PROCESS,
+                    USER_WAIT_APPROVE               -> getUserProcessMainKeyboard(token);
+            case USER_WAIT_KYC                      -> getUserKycMainKeyboard(token);
+            case USER_ACTIVE, USER_ACTIVE_PAYMENT   -> getUserActiveMainKeyboard(token);
+            case OPERATOR_START                     -> getOperatorMainMenu(token);
+            default -> null;
+        };
+    }
+
+    private ReplyKeyboard getOperatorMainMenu(long token) {
+        return getKeyboard(
+                KeyboardService.KeyboardSize.SIX,
+                getReplyText.getReplyText("keyboard.operator.main.ALL"),
+                OperatorCommand.OPERATOR_FILL_DATA.getCommand() + token,
+                getReplyText.getReplyText("keyboard.operator.main.WAIT_EMAIL"),
+                OperatorCommand.OPERATOR_WAIT_EMAIL.getCommand() + token,
+                getReplyText.getReplyText("keyboard.operator.main.WAIT_CL"),
+                OperatorCommand.OPERATOR_WAIT_CL.getCommand() + token,
+                getReplyText.getReplyText("keyboard.operator.main.WAIT_KYC"),
+                OperatorCommand.OPERATOR_WAIT_KYC.getCommand() + token,
+                getReplyText.getReplyText("keyboard.operator.main.WAIT_APPROVE"),
+                OperatorCommand.OPERATOR_WAIT_APPROVE.getCommand() + token,
+                getReplyText.getReplyText("keyboard.operator.main.LINK"),
+                OperatorCommand.OPERATOR_LINK.getCommand() + token);
+    }
+
+    public ReplyKeyboard getBackKeyboard(String command, long token) {
+        return getKeyboard(
+                KeyboardSize.ONE,
+                getReplyText.getReplyText("keyboard.back"),
+                command + token);
+    }
+
+    public ReplyKeyboard getConfirmKeyboard(long token, String ... buttonsText) {
+        return getKeyboard(
+                KeyboardSize.TWO,
+                buttonsText);
+    }
+
+    private ReplyKeyboard getUserNewMainKeyboard(long token) {
+        return getKeyboard(
+                KeyboardSize.TWO,
+                getReplyText.getReplyText("keyboard.user.new.create"),
+                UserCommand.USER_NEW_CREATE.getCommand() + token,
+                getReplyText.getReplyText("keyboard.user.new.help"),
+                UserCommand.USER_HELP.getCommand() + token);
+    }
+
+    private ReplyKeyboard getUserProcessMainKeyboard(long token) {
+        return getKeyboard(
+                KeyboardSize.ONE,
+                getReplyText.getReplyText("keyboard.user.process.help"),
+                UserCommand.USER_HELP.getCommand() + token);
+    }
+
+    private ReplyKeyboard getUserKycMainKeyboard(long token) {
+        return getKeyboard(
+                KeyboardSize.TWO,
+                getReplyText.getReplyText("keyboard.user.waitkyc.done"),
+                UserCommand.USER_YES.getCommand() + token,
+                getReplyText.getReplyText("keyboard.user.waitkyc.help"),
+                UserCommand.USER_HELP.getCommand() + token);
+    }
+
+    private ReplyKeyboard getUserActiveMainKeyboard(long token) {
+        return getKeyboard(
+                KeyboardSize.FOUR,
+                getReplyText.getReplyText("keyboard.user.active.link"),
+                UserCommand.USER_LINK.getCommand() + token,
+                getReplyText.getReplyText("keyboard.user.active.referrals"),
+                UserCommand.USER_REFERRALS.getCommand() + token,
+                getReplyText.getReplyText("keyboard.user.active.bonuses"),
+                UserCommand.USER_BONUSES.getCommand() + token,
+                getReplyText.getReplyText("keyboard.user.active.help"),
+                UserCommand.USER_HELP.getCommand() + token);
     }
 
     private ReplyKeyboard getSixKeyboard(String[] buttonsText) {
@@ -148,7 +215,7 @@ public class KeyboardService {
         return btn;
     }
 
-    public enum UserKeyboardSize {
+    public enum KeyboardSize {
         ONE,
         TWO,
         THREE,
